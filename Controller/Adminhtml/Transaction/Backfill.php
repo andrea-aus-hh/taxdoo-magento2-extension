@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,17 +9,17 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Controller\Adminhtml\Transaction;
+namespace Taxdoo\VAT\Controller\Adminhtml\Transaction;
 
 use Magento\Framework\Controller\ResultFactory;
 
-class Backfill extends \Taxjar\SalesTax\Controller\Adminhtml\Transaction
+class Backfill extends \Taxdoo\VAT\Controller\Adminhtml\Transaction
 {
     /**
      * Sync transactions
@@ -31,7 +31,7 @@ class Backfill extends \Taxjar\SalesTax\Controller\Adminhtml\Transaction
         try {
             $this->logger->record();
 
-            $this->eventManager->dispatch('taxjar_salestax_backfill_transactions');
+            $this->eventManager->dispatch('taxdoo_vat_backfill_transactions');
 
             $responseContent = [
                 'success' => true,

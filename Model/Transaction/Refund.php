@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,17 +9,17 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model\Transaction;
+namespace Taxdoo\VAT\Model\Transaction;
 
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
-class Refund extends \Taxjar\SalesTax\Model\Transaction
+class Refund extends \Taxdoo\VAT\Model\Transaction
 {
     /**
      * @var \Magento\Sales\Model\Order
@@ -53,53 +53,66 @@ class Refund extends \Taxjar\SalesTax\Model\Transaction
         $salesTax = (float) $creditmemo->getTaxAmount();
         $adjustment = (float) $creditmemo->getAdjustment();
         $itemDiscounts = 0;
+        $currency = $creditmemo->getOrderCurrencyCode();
 
         $this->originalOrder = $order;
         $this->originalRefund = $creditmemo;
 
+        $createdAt = new \DateTime($order->getCreatedAt());
+
+        $invoices = $order->getInvoiceCollection();
+
+        foreach ($invoices as $invoice) { //Bad solution, a better one?
+          $currentInvoice = $invoice;
+        }
+        $currentInvoiceCreatedAt = new \DateTime($currentInvoice->getCreatedAt());
+
+        $transactions = $this->getTransactionByOrderId($order->getIncrementId());
+        foreach ($transactions as $transaction) { //Bad solution, a better one?
+          $currentTransaction = $transaction;
+        }
+
+        if (isset($currentTransaction)) { //If there is a transaction, we use it. Otherwise we use the Invoice date
+        $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
+        } else {
+        $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+        }
+
         $refund = [
-            'plugin' => 'magento',
-            'provider' => $this->getProvider($order),
-            'transaction_id' => $creditmemo->getIncrementId() . '-refund',
-            'transaction_reference_id' => $order->getIncrementId(),
-            'transaction_date' => $creditmemo->getCreatedAt(),
-            'amount' => $subtotal + $shipping - abs($discount) + $adjustment,
-            'shipping' => $shipping,
-            'sales_tax' => $salesTax
+          'channel' => array(
+            "identifier" => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
+            "transactionNumber" => $order->getIncrementId(),
+            "refundNumber" => $creditmemo->getIncrementId()
+          ),
+          'source' => array(
+            "identifier" => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
+            "transactionNumber" => $order->getIncrementId(),
+            "refundNumber" => $creditmemo->getIncrementId()
+          ),
+          'paymentDate' => $transactionDate->format(\DateTime::RFC3339),
+          'transactionCurrency' => $currency,
+          'items' => $this->buildLineItems($order, $creditmemo->getAllItems(), 'refund'),
+          'shipping' => -$shipping
         ];
 
-        $this->request = array_merge(
-            $refund,
-            $this->buildFromAddress($order),
-            $this->buildToAddress($order),
-            $this->buildLineItems($order, $creditmemo->getAllItems(), 'refund'),
-            $this->buildCustomerExemption($order)
-        );
 
-        if (isset($this->request['line_items'])) {
+
+        if (isset($this->refund['items'])) {
             $adjustmentFee = $creditmemo->getAdjustmentNegative();
             $adjustmentRefund = $creditmemo->getAdjustmentPositive();
 
             // Discounts on credit memos act as fees and shouldn't be included in $itemDiscounts
-            foreach ($this->request['line_items'] as $k => $lineItem) {
+            foreach ($this->refund['items'] as $k => $lineItem) {
                 if ($subtotal != 0) {
-                    $lineItemSubtotal = $lineItem['unit_price'] * $lineItem['quantity'];
-                    $this->request['line_items'][$k]['discount'] += ($adjustmentFee * ($lineItemSubtotal / $subtotal));
+                    $lineItemSubtotal = $lineItem['itemPrice'] * $lineItem['quantity'];
+                    $this->refund['items'][$k]['discount'] += ($adjustmentFee * ($lineItemSubtotal / $subtotal));
                 }
 
                 $itemDiscounts += $lineItem['discount'];
             }
 
             if ($adjustmentRefund) {
-                $this->request['line_items'][] = [
-                    'id' => 'adjustment-refund',
-                    'quantity' => 1,
-                    'product_identifier' => 'adjustment-refund',
-                    'description' => 'Adjustment Refund',
-                    'unit_price' => $adjustmentRefund,
-                    'discount' => 0,
-                    'sales_tax' => 0
-                ];
+                $this->request['adjustmentAmount'] = $adjustmentRefund;
             }
         }
 
@@ -108,19 +121,24 @@ class Refund extends \Taxjar\SalesTax\Model\Transaction
             $this->request['shipping'] = $shipping - $shippingDiscount;
         }
 
+        $refundsArray = [];
+        $refundsArray['refunds'][] = $refund;
+
+        $this->request = $refundsArray; //TEMPORANEO, GUARDA LA ROBA COMMENTATA PRIMA
+
         return $this->request;
     }
 
     /**
-     * Push refund transaction to SmartCalcs
+     * Push refund transaction to Taxdoo
      *
      * @param string|null $forceMethod
      * @return void
      */
     public function push($forceMethod = null) {
         $refundUpdatedAt = $this->originalRefund->getUpdatedAt();
-        $refundSyncedAt = $this->originalRefund->getTjSalestaxSyncDate();
-        $this->apiKey = $this->taxjarConfig->getApiKey($this->originalOrder->getStoreId());
+        $refundSyncedAt = $this->originalRefund->getTdSalestaxSyncDate();
+        $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
         if (!$this->isSynced($refundSyncedAt)) {
             $method = 'POST';
@@ -128,8 +146,8 @@ class Refund extends \Taxjar\SalesTax\Model\Transaction
             if ($refundSyncedAt < $refundUpdatedAt) {
                 $method = 'PUT';
             } else {
-                $this->logger->log('Refund #' . $this->request['transaction_id']
-                                        . ' for order #' . $this->request['transaction_reference_id']
+                $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber']
+                                        . ' for order #' . $this->request['refunds'][0]['source']['transactionNumber']
                                         . ' not updated since last sync', 'skip');
                 return;
             }
@@ -144,20 +162,20 @@ class Refund extends \Taxjar\SalesTax\Model\Transaction
         }
 
         try {
-            $this->logger->log('Pushing refund / credit memo #' . $this->request['transaction_id']
-                                    . ' for order #' . $this->request['transaction_reference_id']
+            $this->logger->log('Pushing refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber']
+                                    . ' for order #' . $this->request['refunds'][0]['source']['transactionNumber']
                                     . ': ' . json_encode($this->request), $method);
 
             if ($method == 'POST') {
                 $response = $this->client->postResource('refunds', $this->request);
-                $this->logger->log('Refund #' . $this->request['transaction_id'] . ' created: ' . json_encode($response), 'api');
+                $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber'] . ' created: ' . json_encode($response), 'api');
             } else {
-                $response = $this->client->putResource('refunds', $this->request['transaction_id'], $this->request);
-                $this->logger->log('Refund #' . $this->request['transaction_id'] . ' updated: ' . json_encode($response), 'api');
+                $response = $this->client->putResource('refunds', $this->request['refunds'][0]['channel']['transactionNumber'], $this->request);
+                $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber'] . ' updated: ' . json_encode($response), 'api');
             }
 
-            $this->originalRefund->setTjSalestaxSyncDate(gmdate('Y-m-d H:i:s'));
-            $this->originalRefund->getResource()->saveAttribute($this->originalRefund, 'tj_salestax_sync_date');
+            $this->originalRefund->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'));
+            $this->originalRefund->getResource()->saveAttribute($this->originalRefund, 'td_salestax_sync_date');
 
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
@@ -165,13 +183,13 @@ class Refund extends \Taxjar\SalesTax\Model\Transaction
 
             // Retry push for not found records using POST
             if (!$forceMethod && $method == 'PUT' && $error && $error->status == 404) {
-                $this->logger->log('Attempting to create refund / credit memo #' . $this->request['transaction_id'], 'retry');
+                $this->logger->log('Attempting to create refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber'], 'retry');
                 return $this->push('POST');
             }
 
             // Retry push for existing records using PUT
             if (!$forceMethod && $method == 'POST' && $error && $error->status == 422) {
-                $this->logger->log('Attempting to update refund / credit memo #' . $this->request['transaction_id'], 'retry');
+                $this->logger->log('Attempting to update refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber'], 'retry');
                 return $this->push('PUT');
             }
         }

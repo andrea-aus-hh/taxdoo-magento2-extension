@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,13 +9,13 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model;
+namespace Taxdoo\VAT\Model;
 
 use Magento\Config\Model\ResourceModel\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -23,37 +23,27 @@ use Magento\Store\Model\ScopeInterface;
 
 class Configuration
 {
-    const TAXJAR_VERSION              = '1.6.2';
-    const TAXJAR_AUTH_URL             = 'https://app.taxjar.com';
-    const TAXJAR_API_URL              = 'https://api.taxjar.com/v2';
-    const TAXJAR_SANDBOX_API_URL      = 'https://api.sandbox.taxjar.com/v2';
-    const TAXJAR_FEED_URL             = 'www.taxjar.com/magento2/feed.xml';
-    const TAXJAR_ADDRESS_VALIDATION   = 'tax/taxjar/address_validation';
-    const TAXJAR_APIKEY               = 'tax/taxjar/apikey';
-    const TAXJAR_SANDBOX_APIKEY       = 'tax/taxjar/sandbox_apikey';
-    const TAXJAR_BACKUP               = 'tax/taxjar/backup';
-    const TAXJAR_CONNECTED            = 'tax/taxjar/connected';
-    const TAXJAR_CUSTOMER_TAX_CLASSES = 'tax/taxjar/customer_tax_classes';
-    const TAXJAR_DEBUG                = 'tax/taxjar/debug';
-    const TAXJAR_EMAIL                = 'tax/taxjar/email';
-    const TAXJAR_ENABLED              = 'tax/taxjar/enabled';
-    const TAXJAR_FREIGHT_TAXABLE      = 'tax/taxjar/freight_taxable';
-    const TAXJAR_LAST_UPDATE          = 'tax/taxjar/last_update';
-    const TAXJAR_PLUS                 = 'tax/taxjar/plus';
-    const TAXJAR_PRODUCT_TAX_CLASSES  = 'tax/taxjar/product_tax_classes';
-    const TAXJAR_SANDBOX_ENABLED      = 'tax/taxjar/sandbox';
-    const TAXJAR_STATES               = 'tax/taxjar/states';
-    const TAXJAR_TRANSACTION_SYNC     = 'tax/taxjar/transactions';
-    const TAXJAR_DEFAULT_LOG          = 'default.log';
-    const TAXJAR_CALCULATIONS_LOG     = 'calculations.log';
-    const TAXJAR_TRANSACTIONS_LOG     = 'transactions.log';
-    const TAXJAR_ADDRVALIDATION_LOG   = 'address_validation.log';
-    const TAXJAR_CUSTOMER_LOG         = 'customers.log';
-    const TAXJAR_TAXABLE_TAX_CODE     = '11111';
-    const TAXJAR_EXEMPT_TAX_CODE      = '99999';
-    const TAXJAR_GIFT_CARD_TAX_CODE   = '14111803A0001';
-    const TAXJAR_BACKUP_RATE_CODE     = 'TaxJar Backup Rates';
-    const TAXJAR_X_API_VERSION        = '2020-08-07';
+    const TAXDOO_VERSION              = '0.0.1';
+    const TAXDOO_API_URL              = 'https://api.taxdoo.com';
+    const TAXDOO_SANDBOX_API_URL      = 'https://sandbox-api.taxdoo.com';
+    const TAXDOO_APIKEY               = 'tax/taxdoo/apikey';
+    const TAXDOO_SANDBOX_APIKEY       = 'tax/taxdoo/apikey';
+    const TAXDOO_CONNECTED            = 'tax/taxdoo/connected';
+    const TAXDOO_ENABLED              = 'tax/taxdoo/enabled';
+    const TAXDOO_LAST_UPDATE          = 'tax/taxdoo/last_update';
+    const TAXDOO_SANDBOX_ENABLED      = 'tax/taxdoo/sandbox';
+    const TAXDOO_STATES               = 'tax/taxdoo/states';
+    const TAXDOO_TRANSACTION_SYNC     = 'tax/taxdoo/transactions';
+    const TAXDOO_DEBUG                = 'tax/taxdoo/debug';
+    const TAXDOO_DEFAULT_LOG          = 'default.log';
+    const TAXDOO_CALCULATIONS_LOG     = 'calculations.log';
+    const TAXDOO_TRANSACTIONS_LOG     = 'transactions.log';
+    const TAXDOO_CLIENT_LOG           = 'client.log';
+    const TAXDOO_ADDRVALIDATION_LOG   = 'address_validation.log';
+    const TAXDOO_CUSTOMER_LOG         = 'customers.log';
+    const TAXDOO_TAXABLE_TAX_CODE     = '11111';
+    const TAXDOO_EXEMPT_TAX_CODE      = '99999';
+    const TAXDOO_MAGENTO_IDENTIFIER   = 'MAG';
 
     /**
      * @var \Magento\Config\Model\ResourceModel\Config
@@ -84,7 +74,7 @@ class Configuration
      */
     public function getApiUrl()
     {
-        return $this->isSandboxEnabled() ? self::TAXJAR_SANDBOX_API_URL : self::TAXJAR_API_URL;
+        return $this->isSandboxEnabled() ? self::TAXDOO_SANDBOX_API_URL : self::TAXDOO_API_URL;
     }
 
     /**
@@ -96,7 +86,7 @@ class Configuration
     public function getApiKey($storeId = null)
     {
         return preg_replace('/\s+/', '', $this->scopeConfig->getValue(
-            $this->isSandboxEnabled() ? self::TAXJAR_SANDBOX_APIKEY : self::TAXJAR_APIKEY,
+            $this->isSandboxEnabled() ? self::TAXDOO_SANDBOX_APIKEY : self::TAXDOO_APIKEY,
             is_null($storeId) ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
             $storeId
         ));
@@ -108,7 +98,7 @@ class Configuration
      * @return bool
      */
     public function isSandboxEnabled() {
-        return (bool) $this->scopeConfig->getValue(self::TAXJAR_SANDBOX_ENABLED);
+        return (bool) $this->scopeConfig->getValue(self::TAXDOO_SANDBOX_ENABLED);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,20 +9,20 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Observer;
+namespace Taxdoo\VAT\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
 
 class AdminNotifications implements ObserverInterface
 {
     /**
-     * @var \Taxjar\SalesTax\Model\FeedFactory
+     * @var \Taxdoo\VAT\Model\FeedFactory
      */
     protected $_feedFactory;
 
@@ -32,11 +32,11 @@ class AdminNotifications implements ObserverInterface
     protected $_backendAuthSession;
 
     /**
-     * @param \Taxjar\SalesTax\Model\FeedFactory $feedFactory
+     * @param \Taxdoo\VAT\Model\FeedFactory $feedFactory
      * @param \Magento\Backend\Model\Auth\Session $backendAuthSession
      */
     public function __construct(
-        \Taxjar\SalesTax\Model\FeedFactory $feedFactory,
+        \Taxdoo\VAT\Model\FeedFactory $feedFactory,
         \Magento\Backend\Model\Auth\Session $backendAuthSession
     ) {
         $this->_feedFactory = $feedFactory;
@@ -54,7 +54,7 @@ class AdminNotifications implements ObserverInterface
     {
         if ($this->_backendAuthSession->isLoggedIn()) {
             $feedModel = $this->_feedFactory->create();
-            /* @var $feedModel  \Taxjar\SalesTax\Model\Feed */
+            /* @var $feedModel  \Taxdoo\VAT\Model\Feed */
             $feedModel->checkUpdate();
         }
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -10,33 +10,21 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager:etc/config.xsd">
-    <preference for="Magento\Tax\Model\Sales\Total\Quote\Tax" type="Taxjar\SalesTax\Model\Tax\Sales\Total\Quote\Tax" />
-    <preference for="Taxjar\SalesTax\Api\Data\Tax\NexusSearchResultsInterface" type="Magento\Framework\Api\SearchResults" />
-    <preference for="Taxjar\SalesTax\Api\Data\Tax\NexusInterface" type="Taxjar\SalesTax\Model\Tax\Nexus" />
-    <preference for="Taxjar\SalesTax\Api\Tax\NexusRepositoryInterface" type="Taxjar\SalesTax\Model\Tax\Nexus\Repository" />
-    <preference for="Taxjar\SalesTax\Api\AddressValidationInterface" type="Taxjar\SalesTax\Model\AddressValidation" />
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="SyncTransactionsCommand" xsi:type="object">Taxjar\SalesTax\Console\Command\SyncTransactionsCommand</item>
-                <item name="SyncProductCategoriesCommand" xsi:type="object">Taxjar\SalesTax\Console\Command\SyncProductCategoriesCommand</item>
+                <item name="SyncTransactionsCommand" xsi:type="object">Taxdoo\VAT\Console\Command\SyncTransactionsCommand</item>
             </argument>
         </arguments>
     </type>
     <type name="Magento\Framework\RequireJs\Config\File\Collector\Aggregated">
-        <plugin name="manage_address_validation_mixins" type="Taxjar\SalesTax\Plugin\RequireJs\AfterFiles" sortOrder="100"/>
-    </type>
-    <type name="Magento\Tax\Model\Sales\Total\Quote\CommonTaxCollector">
-        <plugin name="taxjar_apply_tax_class" type="Taxjar\SalesTax\Plugin\Tax\Model\Sales\Total\Quote\TaxjarCommonTaxCollector" />
-    </type>
-    <type name="Magento\Sales\Model\Order\ItemRepository">
-        <plugin name="taxjar_sales_order_itemrepository" type="Taxjar\SalesTax\Plugin\Sales\Model\Order\ItemRepository" />
+        <plugin name="manage_address_validation_mixins" type="Taxdoo\VAT\Plugin\RequireJs\AfterFiles" sortOrder="100"/>
     </type>
 </config>

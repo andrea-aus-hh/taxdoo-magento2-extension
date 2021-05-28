@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,11 +9,11 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc.
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti. TaxJar is a trademark of TPS Unlimited, Inc.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Helper;
+namespace Taxdoo\VAT\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -22,7 +22,7 @@ use Magento\Framework\App\Request\Http;
 use Magento\Framework\Pricing\PriceCurrencyInterface as PriceCurrencyInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class Data extends AbstractHelper
 {
@@ -117,7 +117,7 @@ class Data extends AbstractHelper
     public function isTransactionSyncEnabled($scopeCode = 0, $scope = ScopeInterface::SCOPE_STORE)
     {
         $scopeCode = $scopeCode ?: (int) $this->request->getParam($scope, 0);
-        $syncEnabled = $this->scopeConfig->getValue(TaxjarConfig::TAXJAR_TRANSACTION_SYNC, $scope, $scopeCode);
+        $syncEnabled = $this->scopeConfig->getValue(TaxdooConfig::TAXDOO_TRANSACTION_SYNC, $scope, $scopeCode);
         return (bool) $syncEnabled;
     }
 
@@ -135,9 +135,9 @@ class Data extends AbstractHelper
         $openSSL = defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : '';
         $magento = 'Magento ' . $this->productMetadata->getEdition() . ' ' . $this->productMetadata->getVersion();
         $precision = 'Precision ' . PriceCurrencyInterface::DEFAULT_PRECISION;
-        $taxjar = 'Taxjar_SalesTax/' . TaxjarConfig::TAXJAR_VERSION;
+        $taxdoo = 'Taxdoo_VAT/' . TaxdooConfig::TAXDOO_VERSION;
 
-        return "TaxJar/Magento ($os; $php; $curl; $openSSL; $precision; $magento) $taxjar";
+        return "Taxdoo/Magento ($os; $php; $curl; $openSSL; $precision; $magento) $taxdoo";
     }
 
     /**

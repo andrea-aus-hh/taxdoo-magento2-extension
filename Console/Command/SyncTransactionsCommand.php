@@ -1,6 +1,6 @@
 <?php
 
-namespace Taxjar\SalesTax\Console\Command;
+namespace Taxdoo\VAT\Console\Command;
 
 use Magento\Framework\App\State;
 use Magento\Framework\Event\Manager;
@@ -8,8 +8,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
-use Taxjar\SalesTax\Model\Logger;
-use Taxjar\SalesTax\Model\Transaction\Backfill;
+use Taxdoo\VAT\Model\Logger;
+use Taxdoo\VAT\Model\Transaction\Backfill;
 
 class SyncTransactionsCommand extends Command
 {
@@ -27,12 +27,12 @@ class SyncTransactionsCommand extends Command
     protected $eventManager;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Logger
+     * @var \Taxdoo\VAT\Model\Logger
      */
     protected $logger;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\Backfill
+     * @var \Taxdoo\VAT\Model\Transaction\Backfill
      */
     protected $backfill;
 
@@ -60,8 +60,8 @@ class SyncTransactionsCommand extends Command
      */
     protected function configure()
     {
-        $this->setName('taxjar:transactions:sync')
-            ->setDescription('Sync transactions from Magento to TaxJar')
+        $this->setName('taxdoo:transactions:sync')
+            ->setDescription('Sync transactions from Magento to Taxdoo')
             ->addArgument(self::FROM_ARGUMENT, InputArgument::OPTIONAL)
             ->addArgument(self::TO_ARGUMENT, InputArgument::OPTIONAL);
     }

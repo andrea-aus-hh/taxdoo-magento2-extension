@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,17 +9,17 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model;
+namespace Taxdoo\VAT\Model;
 
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Exception\LocalizedException;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class Logger
 {
@@ -56,7 +56,7 @@ class Logger
     /**
      * @var string
      */
-    protected $filename = TaxjarConfig::TAXJAR_DEFAULT_LOG;
+    protected $filename = TaxdooConfig::TAXDOO_DEFAULT_LOG;
 
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -64,9 +64,9 @@ class Logger
     protected $storeManager;
 
     /**
-     * @var TaxjarConfig
+     * @var TaxdooConfig
      */
-    protected $taxjarConfig;
+    protected $taxdooConfig;
 
     /**
      * @var boolean
@@ -82,13 +82,13 @@ class Logger
         \Magento\Framework\Filesystem\Driver\File $driverFile,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        TaxjarConfig $taxjarConfig
+        TaxdooConfig $taxdooConfig
     ) {
         $this->directoryList = $directoryList;
         $this->driverFile = $driverFile;
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
-        $this->taxjarConfig = $taxjarConfig;
+        $this->taxdooConfig = $taxdooConfig;
     }
 
     /**
@@ -122,11 +122,11 @@ class Logger
      */
     public function getPath()
     {
-        return $this->directoryList->getPath(DirectoryList::LOG) . DIRECTORY_SEPARATOR . 'taxjar' . DIRECTORY_SEPARATOR . $this->filename;
+        return $this->directoryList->getPath(DirectoryList::LOG) . DIRECTORY_SEPARATOR . 'taxdoo' . DIRECTORY_SEPARATOR . $this->filename;
     }
 
     /**
-     * Save a message to taxjar.log
+     * Save a message to taxdoo.log
      *
      * @param string $message
      * @param string $label
@@ -136,7 +136,7 @@ class Logger
     public function log($message, $label = '')
     {
         if ($this->scopeConfig->getValue(
-            TaxjarConfig::TAXJAR_DEBUG,
+            TaxdooConfig::TAXDOO_DEBUG,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $this->storeManager->getStore()->getId())
             ||
@@ -147,7 +147,7 @@ class Logger
                     $label = '[' . strtoupper($label) . '] ';
                 }
 
-                if ($this->taxjarConfig->isSandboxEnabled()) {
+                if ($this->taxdooConfig->isSandboxEnabled()) {
                     $label = '[SANDBOX] ' . $label;
                 }
 

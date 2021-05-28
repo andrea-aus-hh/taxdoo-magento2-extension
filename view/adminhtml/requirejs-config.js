@@ -1,5 +1,5 @@
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -8,17 +8,17 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
 var config = {
     map: {
         '*': {
-            taxjarClipboard: 'Taxjar_SalesTax/js/clipboard',
-            taxjarPopup: 'Taxjar_SalesTax/js/popup'
+            taxdooClipboard: 'Taxdoo_VAT/js/clipboard',
+            taxdooPopup: 'Taxdoo_VAT/js/popup'
         }
     }
 };

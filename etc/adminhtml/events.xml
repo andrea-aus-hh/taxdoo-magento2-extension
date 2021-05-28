@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -10,35 +10,21 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event:etc/events.xsd">
-    <event name="admin_system_config_changed_section_tax">
-        <observer name="taxjar_salestax_config_changed" instance="Taxjar\SalesTax\Observer\ConfigChanged"/>
+   <event name="controller_action_postdispatch_adminhtml_system_config_save">
+        <observer name="taxdoo_salestax_config_review" instance="Taxdoo\VAT\Observer\ConfigReview"/>
     </event>
-    <event name="controller_action_predispatch_adminhtml_system_config_edit">
-        <observer name="taxjar_salestax_config_review" instance="Taxjar\SalesTax\Observer\ConfigReview"/>
-    </event>
-    <event name="taxjar_salestax_backfill_transactions">
-        <observer name="taxjar_salestax_backfill_transactions" instance="Taxjar\SalesTax\Observer\BackfillTransactions"/>
-    </event>
-    <event name="taxjar_salestax_import_data">
-        <observer name="taxjar_salestax_import_data" instance="Taxjar\SalesTax\Observer\ImportData"/>
-    </event>
-    <event name="taxjar_salestax_import_rates">
-        <observer name="taxjar_salestax_import_rates" instance="Taxjar\SalesTax\Observer\ImportRates"/>
+
+    <event name="taxdoo_vat_backfill_transactions">
+        <observer name="taxdoo_salestax_backfill_transactions" instance="Taxdoo\VAT\Observer\BackfillTransactions"/>
     </event>
     <event name="controller_action_predispatch">
-        <observer name="taxjar_salestax_predispatch_admin_action_controller_observer" instance="Taxjar\SalesTax\Observer\AdminNotifications"/>
-    </event>
-    <event name="customer_save_before">
-        <observer name="taxjar_salestax_customer_save_before" instance="Taxjar\SalesTax\Observer\Customer\Save"/>
-    </event>
-    <event name="customer_delete_before">
-        <observer name="taxjar_salestax_customer_delete_before" instance="Taxjar\SalesTax\Observer\Customer\Delete"/>
+        <observer name="taxdoo_salestax_predispatch_admin_action_controller_observer" instance="Taxdoo\VAT\Observer\AdminNotifications"/>
     </event>
 </config>

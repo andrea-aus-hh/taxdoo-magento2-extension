@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,18 +9,18 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model;
+namespace Taxdoo\VAT\Model;
 
 use Magento\Directory\Model\RegionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class Client
 {
@@ -45,45 +45,40 @@ class Client
     protected $storeRegionCode;
 
     /**
-     * @var \Magento\Directory\Model\CountryFactory
-     */
-    protected $regionFactory;
-
-    /**
      * @var bool
      */
     protected $showResponseErrors;
 
     /**
-     * @var \Taxjar\SalesTax\Helper\Data
+     * @var \Taxdoo\VAT\Helper\Data
      */
-    protected $tjHelper;
+    protected $tdHelper;
 
     /**
-     * @var TaxjarConfig
+     * @var TaxdooConfig
      */
-    protected $taxjarConfig;
+    protected $taxdooConfig;
 
     /**
      * @param ScopeConfigInterface $scopeConfig
      * @param RegionFactory $regionFactory
-     * @param \Taxjar\SalesTax\Helper\Data $tjHelper
-     * @param TaxjarConfig $taxjarConfig
+     * @param \Taxdoo\VAT\Helper\Data $tdHelper
+     * @param TaxdooConfig $taxdooConfig
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         RegionFactory $regionFactory,
-        \Taxjar\SalesTax\Helper\Data $tjHelper,
-        TaxjarConfig $taxjarConfig
+        \Taxdoo\VAT\Helper\Data $tdHelper,
+        \Taxdoo\VAT\Model\Logger $logger,
+        TaxdooConfig $taxdooConfig
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->regionFactory = $regionFactory;
-        $this->tjHelper = $tjHelper;
-        $this->taxjarConfig = $taxjarConfig;
-        $this->apiKey = $this->taxjarConfig->getApiKey();
+        $this->tdHelper = $tdHelper;
+        $this->taxdooConfig = $taxdooConfig;
+        $this->apiKey = $this->taxdooConfig->getApiKey();
         $this->storeZip = trim($this->scopeConfig->getValue('shipping/origin/postcode'));
-        $region = $this->_getShippingRegion();
-        $this->storeRegionCode = $region->getCode();
+        $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_CLIENT_LOG);
     }
 
     /**
@@ -111,6 +106,7 @@ class Client
     {
         $client = $this->getClient($this->_getApiUrl($resource), \Zend_Http_Client::POST);
         $client->setRawData(json_encode($data), 'application/json');
+
         return $this->_getRequest($client, $errors);
     }
 
@@ -125,7 +121,7 @@ class Client
      */
     public function putResource($resource, $resourceId, $data, $errors = [])
     {
-        $resourceUrl = $this->_getApiUrl($resource) . '/' . $resourceId;
+        $resourceUrl = $this->_getApiUrl($resource);// . '/' . $resourceId;
         $client = $this->getClient($resourceUrl, \Zend_Http_Client::PUT);
         $client->setRawData(json_encode($data), 'application/json');
         return $this->_getRequest($client, $errors);
@@ -141,7 +137,7 @@ class Client
      */
     public function deleteResource($resource, $resourceId, $errors = [])
     {
-        $resourceUrl = $this->_getApiUrl($resource) . '/' . $resourceId;
+        $resourceUrl = $this->_getApiUrl($resource) . '?ids=' . $resourceId;
         $client = $this->getClient($resourceUrl, \Zend_Http_Client::DELETE);
         return $this->_getRequest($client, $errors);
     }
@@ -155,6 +151,16 @@ class Client
     public function setApiKey($key)
     {
         $this->apiKey = $key;
+    }
+
+    public function checkApiKey()
+    {
+      try {
+        $response = $this->getResource('account');
+        return $response;
+      } catch (LocalizedException $e) {
+        return False;
+      }
     }
 
     /**
@@ -181,14 +187,12 @@ class Client
         $client->setUri($url);
         $client->setMethod($method);
         $client->setConfig([
-            'useragent' => $this->tjHelper->getUserAgent(),
-            'referer' => $this->tjHelper->getStoreUrl()
+            'useragent' => $this->tdHelper->getUserAgent(),
+            'referer' => $this->tdHelper->getStoreUrl()
         ]);
         $client->setHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'x-api-version' => TaxJarConfig::TAXJAR_X_API_VERSION
+            'AuthToken' => $this->apiKey,
         ]);
-
         return $client;
     }
 
@@ -202,6 +206,7 @@ class Client
      */
     private function _getRequest($client, $errors = [])
     {
+
         try {
             $response = $client->request();
 
@@ -211,71 +216,37 @@ class Client
             } else {
                 $this->_handleError($errors, $response);
             }
-        } catch (\Zend_Http_Client_Exception $e) {
-            throw new LocalizedException(__('Could not connect to TaxJar.'));
+        } catch (LocalizedException $e) {
+          throw $e;
         }
+
     }
 
     /**
-     * Get SmartCalcs API URL
+     * Get Taxdoo API URL
      *
      * @param string $resource
      * @return string
      */
     private function _getApiUrl($resource)
     {
-        $apiUrl = $this->taxjarConfig->getApiUrl();
+        $apiUrl = $this->taxdooConfig->getApiUrl();
 
         switch ($resource) {
-            case 'config':
-                $apiUrl .= '/plugins/magento/configuration/' . $this->storeRegionCode;
-                break;
-            case 'rates':
-                $apiUrl .= '/plugins/magento/rates/' . $this->storeRegionCode . '/' . $this->storeZip;
-                break;
-            case 'categories':
-                $apiUrl .= '/categories';
-                break;
-            case 'nexus':
-                $apiUrl .= '/nexus/addresses';
-                break;
+            case 'account':
+              $apiUrl .= '/account';
+              break;
             case 'orders':
-                $apiUrl .= '/transactions/orders';
+                $apiUrl .= '/orders';
                 break;
             case 'refunds':
-                $apiUrl .= '/transactions/refunds';
-                break;
-            case 'addressValidation':
-                $apiUrl .= '/addresses/validate';
-                break;
-            case 'verify':
-                $apiUrl .= '/verify';
-                break;
-            case 'customers':
-                $apiUrl .= '/customers';
-                break;
-            case 'taxes':
-                $apiUrl .= '/magento/taxes';
+                $apiUrl .= '/refunds';
                 break;
         }
 
         return $apiUrl;
     }
 
-    /**
-     * Get shipping region
-     *
-     * @return string
-     */
-    private function _getShippingRegion()
-    {
-        $region = $this->regionFactory->create();
-        $regionId = $this->scopeConfig->getValue(
-            \Magento\Shipping\Model\Config::XML_PATH_ORIGIN_REGION_ID
-        );
-        $region->load($regionId);
-        return $region;
-    }
 
     /**
      * Handle API errors and throw exception
@@ -290,12 +261,12 @@ class Client
         $errors = $this->_defaultErrors() + $customErrors;
         $statusCode = $response->getStatus();
 
-        if ($this->showResponseErrors) {
-            throw new LocalizedException(__($response->getBody()));
-        }
-
         if (isset($errors[$statusCode])) {
             throw new LocalizedException($errors[$statusCode]);
+        }
+
+        if ($this->showResponseErrors) {
+            throw new LocalizedException(__($response->getBody()));
         }
 
         throw new LocalizedException($errors['default']);
@@ -310,9 +281,14 @@ class Client
     {
         // @codingStandardsIgnoreStart
         return [
-            '401' => __('Your TaxJar API token is invalid. Please review your TaxJar account at %1.', TaxjarConfig::TAXJAR_AUTH_URL),
-            '403' => __('Your TaxJar trial or subscription may have expired. Please review your TaxJar account at %1.', TaxjarConfig::TAXJAR_AUTH_URL),
-            'default' => __('Could not connect to TaxJar.')
+            '401' => __('Taxdoo Authentication failed.', TaxdooConfig::TAXDOO_API_URL),
+            '403' => __('Your Taxdoo API token is invalid. Please review your Taxdoo account at %1.', TaxdooConfig::TAXDOO_API_URL),
+            '404' => __('Not found -- Your request path is wrong', TaxdooConfig::TAXDOO_API_URL),
+            '400' => __('Bad request', TaxdooConfig::TAXDOO_API_URL),
+            '429' => __("Too many requests. Are you trying DOS or not respecting Taxdoo's Rate Limits", TaxdooConfig::TAXDOO_API_URL),
+            '500' => __('Internal Server Error. Get in touch with Taxdoo',TaxdooConfig::TAXDOO_API_URL),
+            '503' => __('Service unavailable. Please try again later'),
+            'default' => __('Could not connect to Taxdoo.')
         ];
         // @codingStandardsIgnoreEnd
     }

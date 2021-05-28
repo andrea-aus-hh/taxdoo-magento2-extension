@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,22 +9,24 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Observer;
+namespace Taxdoo\VAT\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Registry;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Taxjar\SalesTax\Model\Transaction\OrderFactory;
-use Taxjar\SalesTax\Model\Transaction\RefundFactory;
-use Taxjar\SalesTax\Helper\Data as TaxjarHelper;
+use Taxdoo\VAT\Model\Transaction\OrderFactory;
+use Taxdoo\VAT\Model\Transaction\RefundFactory;
+use Taxdoo\VAT\Helper\Data as TaxdooHelper;
+use Taxdoo\VAT\Model\Logger;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class SyncTransaction implements ObserverInterface
 {
@@ -39,12 +41,12 @@ class SyncTransaction implements ObserverInterface
     protected $orderRepository;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\OrderFactory
+     * @var \Taxdoo\VAT\Model\Transaction\OrderFactory
      */
     protected $orderFactory;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\RefundFactory
+     * @var \Taxdoo\VAT\Model\Transaction\RefundFactory
      */
     protected $refundFactory;
 
@@ -54,9 +56,19 @@ class SyncTransaction implements ObserverInterface
     protected $registry;
 
     /**
-     * @var \Taxjar\SalesTax\Helper\Data
+     * @var \Taxdoo\VAT\Helper\Data
      */
     protected $helper;
+
+    /**
+     * @var \Taxdoo\VAT\Model\Logger
+     */
+    protected $logger;
+
+    /**
+     * @var TaxdooConfig
+     */
+    protected $taxdooConfig;
 
     /**
      * @param ManagerInterface $messageManager
@@ -70,8 +82,10 @@ class SyncTransaction implements ObserverInterface
         OrderRepositoryInterface $orderRepository,
         OrderFactory $orderFactory,
         RefundFactory $refundFactory,
+        \Taxdoo\VAT\Model\Logger $logger,
         Registry $registry,
-        TaxjarHelper $helper
+        TaxdooHelper $helper,
+        TaxdooConfig $taxdooConfig
     ) {
         $this->messageManager = $messageManager;
         $this->orderRepository = $orderRepository;
@@ -79,6 +93,8 @@ class SyncTransaction implements ObserverInterface
         $this->refundFactory = $refundFactory;
         $this->registry = $registry;
         $this->helper = $helper;
+        $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_DEFAULT_LOG);
+        $this->taxdooConfig = $taxdooConfig;
     }
 
     /**
@@ -98,8 +114,8 @@ class SyncTransaction implements ObserverInterface
         $orderTransaction = $this->orderFactory->create();
 
         if ($orderTransaction->isSyncable($order)) {
-            if (!$this->registry->registry('taxjar_sync_' . $eventName)) {
-                $this->registry->register('taxjar_sync_' . $eventName, true);
+            if (!$this->registry->registry('taxdoo_sync_' . $eventName)) {
+                $this->registry->register('taxdoo_sync_' . $eventName, true);
             } else {
                 return $this;
             }
@@ -117,14 +133,14 @@ class SyncTransaction implements ObserverInterface
                 }
 
                 if ($observer->getData('order_id')) {
-                    $this->messageManager->addSuccessMessage(__('Order successfully synced to TaxJar.'));
+                    $this->messageManager->addSuccessMessage(__('Order successfully synced to Taxdoo.'));
                 }
             } catch(\Exception $e) {
                 $this->messageManager->addErrorMessage($e->getMessage());
             }
         } else {
             if ($observer->getData('order_id')) {
-                $this->messageManager->addErrorMessage(__('This order was not synced to TaxJar.'));
+                $this->messageManager->addErrorMessage(__('This order was not synced to Taxdoo.'));
             }
         }
 

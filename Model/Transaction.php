@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,18 +9,18 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2017 Taxdoo. Taxdoo is a trademark of TPS Unlimited, Inc. (http://www.Taxdoo.com)
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model;
+namespace Taxdoo\VAT\Model;
 
 use Magento\Bundle\Model\Product\Price;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Taxjar\SalesTax\Helper\Data as TaxjarHelper;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Helper\Data as TaxdooHelper;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class Transaction
 {
@@ -30,7 +30,7 @@ class Transaction
     protected $scopeConfig;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Logger
+     * @var \Taxdoo\VAT\Model\Logger
      */
     protected $logger;
 
@@ -40,7 +40,7 @@ class Transaction
     protected $regionFactory;
 
     /**
-     * @var \Taxjar\SalesTax\Model\ClientFactory
+     * @var \Taxdoo\VAT\Model\ClientFactory
      */
     protected $clientFactory;
 
@@ -55,7 +55,7 @@ class Transaction
     protected $taxClassRepository;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Client
+     * @var \Taxdoo\VAT\Model\Client
      */
     protected $client;
 
@@ -65,46 +65,50 @@ class Transaction
     protected $objectManager;
 
     /**
-     * @var \Taxjar\SalesTax\Helper\Data
+     * @var \Taxdoo\VAT\Helper\Data
      */
     protected $helper;
 
     /**
-     * @var TaxjarConfig
+     * @var TaxdooConfig
      */
-    protected $taxjarConfig;
+    protected $taxdooConfig;
 
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Taxjar\SalesTax\Model\ClientFactory $clientFactory
+     * @param \Taxdoo\VAT\Model\ClientFactory $clientFactory
      * @param \Magento\Catalog\Model\ProductRepository $productRepository
      * @param \Magento\Directory\Model\RegionFactory $regionFactory
      * @param \Magento\Tax\Api\TaxClassRepositoryInterface $taxClassRepository
-     * @param \Taxjar\SalesTax\Model\Logger $logger
+     * @param \Taxdoo\VAT\Model\Logger $logger
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
-     * @param TaxjarHelper $helper
-     * @param TaxjarConfig $taxjarConfig
+     * @param TaxdooHelper $helper
+     * @param TaxdooConfig $TaxdooConfig
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Taxjar\SalesTax\Model\ClientFactory $clientFactory,
+        \Taxdoo\VAT\Model\ClientFactory $clientFactory,
         \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Directory\Model\RegionFactory $regionFactory,
         \Magento\Tax\Api\TaxClassRepositoryInterface $taxClassRepository,
-        \Taxjar\SalesTax\Model\Logger $logger,
+        \Taxdoo\VAT\Model\Logger $logger,
         \Magento\Framework\ObjectManagerInterface $objectManager,
-        TaxjarHelper $helper,
-        TaxjarConfig $taxjarConfig
+        \Magento\Sales\Api\TransactionRepositoryInterface $repository,
+        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
+        TaxdooHelper $helper,
+        TaxdooConfig $taxdooConfig
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->clientFactory = $clientFactory;
         $this->productRepository = $productRepository;
         $this->regionFactory = $regionFactory;
         $this->taxClassRepository = $taxClassRepository;
-        $this->logger = $logger->setFilename(TaxjarConfig::TAXJAR_TRANSACTIONS_LOG);
+        $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG);
         $this->objectManager = $objectManager;
+        $this->repository = $repository;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->helper = $helper;
-        $this->taxjarConfig = $taxjarConfig;
+        $this->taxdooConfig = $taxdooConfig;
 
         $this->client = $this->clientFactory->create();
         $this->client->showResponseErrors(true);
@@ -126,7 +130,7 @@ class Transaction
     }
 
     /**
-     * Build `from` address for SmartCalcs request
+     * Build `from` address for Taxdoo request
      *
      * @param \Magento\Sales\Model\Order $order
      * @return array
@@ -151,7 +155,7 @@ class Transaction
             $order->getStoreId()
         );
         $region->load($regionId);
-        $fromState = $region->getCode();
+        $fromState = $region->getName();
         $fromCity = $this->scopeConfig->getValue(
             \Magento\Shipping\Model\Config::XML_PATH_ORIGIN_CITY,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -160,45 +164,56 @@ class Transaction
         $fromStreet = $this->scopeConfig->getValue('shipping/origin/street_line1',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $order->getStoreId()
+        ) . ' ' . $this->scopeConfig->getValue('shipping/origin/street_line2',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $order->getStoreId()
         );
 
         return [
-            'from_country' => $fromCountry,
-            'from_zip' => $fromPostcode,
-            'from_state' => $fromState,
-            'from_city' => $fromCity,
-            'from_street' => $fromStreet
+            'country' => $fromCountry,
+            'zip' => $fromPostcode,
+            'state' => $fromState,
+            'city' => $fromCity,
+            'street' => $fromStreet
         ];
     }
 
     /**
-     * Build `to` address for SmartCalcs request
+     * Build `to` address for Taxdoo request
      *
      * @param \Magento\Sales\Model\Order $order
      * @return array
      */
     protected function buildToAddress(
-        \Magento\Sales\Model\Order $order
+        \Magento\Sales\Model\Order $order,
+        $type = "shipping"
     ) {
-        if ($order->getIsVirtual()) {
+        if ($order->getIsVirtual() or $type == "billing") {
             $address = $order->getBillingAddress();
         } else {
             $address = $order->getShippingAddress();
         }
 
+        if ($address->getMiddlename() == "") {
+          $fullName = $address->getFirstname() . ' ' . $address->getLastname();
+        } else {
+          $fullName = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
+        }
+
         $toAddress = [
-            'to_country' => $address->getCountryId(),
-            'to_zip' => $address->getPostcode(),
-            'to_state' => $address->getRegionCode(),
-            'to_city' => $address->getCity(),
-            'to_street' => $address->getStreetLine(1)
+          'fullName' => $fullName,
+          'street' => $address->getStreetLine(1) . ' ' . $address->getStreetLine(2),
+          'zip' => $address->getPostcode(),
+          'city' => $address->getCity(),
+          'state' => $address->getRegion(),
+          'country' => $address->getCountryId()
         ];
 
         return $toAddress;
     }
 
     /**
-     * Build line items for SmartCalcs request
+     * Build line items for Taxdoo request
      *
      * @param \Magento\Sales\Model\Order $order
      * @param array $items
@@ -265,18 +280,28 @@ class Transaction
                 $tax = $parentTaxes[$itemId] ?: $tax;
             }
 
-            $lineItem = [
-                'id' => $itemId,
-                'quantity' => $quantity,
-                'product_identifier' => $item->getSku(),
-                'description' => $item->getName(),
-                'unit_price' => $unitPrice,
-                'discount' => $discount,
-                'sales_tax' => $tax,
-                'product_tax_code' => $this->getProductTaxCode($item, $order)
+            if ($type == "order"){
+              $lineItem = [
+              'quantity' => $quantity,
+              'productIdentifier' => $item->getSku(),
+              'description' => $item->getName(),
+              'itemPrice' => $unitPrice,
+              'channelItemNumber' => $itemId,
+              'discount' => $discount,
+              'sourceItemNumber' => $itemId //I don't see the difference
             ];
+          } else if ($type == "refund") {
+            $lineItem = [
+              'quantity' => $quantity,
+              'description' => $item->getName(),
+              'itemPrice' => -$unitPrice,
+              'channelItemNumber' => $itemId,
+              'sourceItemNumber' => $itemId,
+              'discount' => $discount,
+            ];
+          }
 
-            $lineItems['line_items'][] = $lineItem;
+            $lineItems[] = $lineItem;
         }
 
         return $lineItems;
@@ -297,29 +322,6 @@ class Transaction
         return [];
     }
 
-    /**
-     * @param \Magento\Sales\Model\Order $order
-     * @return string
-     */
-    protected function getProvider($order)
-    {
-        $provider = 'api';
-
-        try {
-            if (class_exists('\Ess\M2ePro\Model\Order')) {
-                $m2eOrder = $this->objectManager->create('\Ess\M2ePro\Model\Order');
-                $m2eOrder = $m2eOrder->load($order->getId(), 'magento_order_id');
-
-                if (in_array($m2eOrder->getComponentMode(), ['amazon', 'ebay', 'walmart'])) {
-                    $provider = $m2eOrder->getComponentMode();
-                }
-            }
-        } catch (\Ess\M2ePro\Model\Exception\Logic $e) {
-            // noop: M2e order does not exist or component mode can't be loaded
-        }
-
-        return $provider;
-    }
 
     /**
      * Get parent amounts (discounts, tax, etc) for configurable / bundle products
@@ -364,64 +366,19 @@ class Transaction
         return $parentAmounts;
     }
 
+
     /**
-     * Get the PTC, either assigned directly to the product or from the tax class
+     * @param int $id
      *
-     * @param $item
-     * @param \Magento\Sales\Model\Order $order
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return \Magento\Sales\Api\Data\TransactionInterface[]
      */
-    protected function getProductTaxCode($item, $order)
+    public function getTransactionByOrderId($id)
     {
-        // Check for a PTC saved to the Item
-        // For configurable products, load the PTC of the child
-        if ($item->getHasChildren() && $item->getProductType() == 'configurable') {
-            $children = $item->getChildrenItems();
+        $this->searchCriteriaBuilder->addFilter('order_id', $id);
+        $list = $this->repository->getList(
+            $this->searchCriteriaBuilder->create()
+        );
 
-            if (!empty($children) && is_array($children)) {
-                $child = reset($children);
-                return $child->getTjPtc() != TaxjarConfig::TAXJAR_TAXABLE_TAX_CODE ? $child->getTjPtc() : '';
-            }
-        }
-
-        if ($item->getTjPtc()) {
-            // Return the PTC, or an empty string if the TAXABLE_TAX_CODE is present
-            return $item->getTjPtc() != TaxjarConfig::TAXJAR_TAXABLE_TAX_CODE ? $item->getTjPtc() : '';
-        }
-
-        // If no PTC is saved on the Item, attempt to load it from the product or tax class
-        try {
-            $product = $this->productRepository->getById($item->getProductId(), false, $order->getStoreId());
-
-            // Check for a PTC assigned directly to the product; otherwise fall back to tax classes
-            if ($product->getTjPtc()) {
-                return $product->getTjPtc();
-            }
-
-            // Load the tax class from the product.  For configurable products, check the child first
-            if ($item->getProductType() == 'configurable') {
-                $children = $item->getChildrenItems();
-            }
-
-            if (!empty($children) && is_array($children)) {
-                $child = reset($children);
-
-                if ($child->getProduct()->getTaxClassId()) {
-                    $taxClass = $this->taxClassRepository->get($child->getProduct()->getTaxClassId());
-                }
-            } elseif ($product->getTaxClassId()) {
-                $taxClass = $this->taxClassRepository->get($product->getTaxClassId());
-            }
-
-            if (!empty($taxClass) && $taxClass->getTjSalestaxCode()) {
-                return $taxClass->getTjSalestaxCode();
-            }
-
-        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
-            $msg = 'Product #' . $item->getProductId() . ' does not exist.  Order #' . $order->getIncrementId() . ' possibly missing product tax codes.';
-            $this->logger->log($msg, 'error');
-        }
-
-        return '';
+        return $list->getItems();
     }
 }

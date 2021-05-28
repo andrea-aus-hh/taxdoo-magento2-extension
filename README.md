@@ -1,61 +1,34 @@
-# Magento 2 Sales Tax Extension by TaxJar
+# Magento 2 Taxdoo Plugin
 
-Simplify your sales tax with live checkout calculations and zip-based backup rates from [TaxJar](http://www.taxjar.com).
+Attempting to write a Taxdoo plugin for Magento 2 shops. Its features are at the moment the basic ones: backfilling old orders and refunds, automatically syncing new orders and refunds, as soon as they are closed. If someone with a real Magento shop wants to experiment and give feedback, I'm more than happy. The plugin supports Taxdoo's sandbox mode, so that your production calculations can stay safe.
 
-To get started, check out our [M2 extension guide](http://www.taxjar.com/guides/integrations/magento2/)!
+This code is a fork of the open source [Magento 2 Taxjar plugin](https://github.com/taxjar/taxjar-magento2-extension), adapted to work with its European epigone Taxdoo. Being a derivative product, it's released under the same license, the [Open Software License 3.0](https://opensource.org/licenses/OSL-3.0) (OSL-3.0).
 
 ## Getting Started
 
-Download the extension as a ZIP file from this repository or install our module with [Composer](https://getcomposer.org/) using the following command:
+Download the extension as a ZIP file from this repository. Unzip the archive and upload the files to `/app/code/Taxdoo/VAT`. After uploading, run the following [Magento CLI](http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands.html) commands:
 
 ```
-composer require taxjar/module-taxjar
-```
-
-If you're installing the extension manually, unzip the archive and upload the files to `/app/code/Taxjar/SalesTax`. After uploading, run the following [Magento CLI](http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands.html) commands:
-
-```
-bin/magento module:enable Taxjar_SalesTax --clear-static-content
+bin/magento module:enable Taxdoo_VAT --clear-static-content
 bin/magento setup:upgrade
 bin/magento setup:di:compile
 ```
 
-These commands will enable the TaxJar extension, perform necessary database updates, and re-compile your Magento store. From there, you'll want to run through the pre-import checklist and set everything up using our [extension guide](http://www.taxjar.com/guides/integrations/magento2/)).
+These commands will enable the Taxdoo extension, perform necessary database updates, and re-compile your Magento store.
+
+Navigate to Stores->Configuration->Tax to enable the module and enter your API Token. It will give positive feedback if the Token is correct. Turn on Sandbox Mode if you don't want to risk dirtying your existing Taxdoo production data.
+Make sure to add an Origin shipping address under Stores->Configuration, and then Sales->Shipping Settings.
+
+You can backfill old orders and credit memos. If you activate Transaction Sync, all new complete/closed orders and credit memos will be automatically synced - that is if your API Token is correct.
 
 ## Tests
 
-To run our integration tests for checkout calculations, clone the repository into your local instance of Magento 2. You'll need an active TaxJar API token (preferably a test account) to run these tests.
-
-```
-git clone https://github.com/taxjar/taxjar-magento2-extension.git app/code/Taxjar/SalesTax
-```
-
-Backup or rename your existing `phpunit.xml` under `dev/tests/integration`. Copy the `phpunit.xml file` in the TaxJar module under `app/code/Taxjar/SalesTax/Test/Integration`:
-
-```
-cp app/code/Taxjar/SalesTax/Test/Integration/phpunit.xml dev/tests/integration/phpunit.xml
-```
-
-Rename `install-config-mysql.php.dist` to `install-config-mysql.php` under `dev/tests/integration/etc`. Make sure Magento has access to a MySQL database for running integration tests.
-
-Copy `Test/Integration/credentials.php.dist` to `credentials.php` in the same directory and add your TaxJar API token:
-
-```
-cp app/code/Taxjar/SalesTax/Test/Integration/credentials.php.dist app/code/Taxjar/SalesTax/Test/Integration/credentials.php
-```
-
-Finally, run the TaxJar test suite using PHPUnit:
-
-```
-vendor/bin/phpunit -c ~/OSS/magento2/dev/tests/integration/phpunit.xml --testsuite “Taxjar”
-```
-
-Notice that the configuration flag should include the full path to `phpunit.xml`.
+I'm still in the process of adapting the original TaxJar integration tests for this Taxdoo version. Stay tuned.
 
 ## License
 
-TaxJar's Magento 2 module is released under the [Open Software License 3.0](https://opensource.org/licenses/OSL-3.0) (OSL-3.0).
+Taxdoo's Magento 2 module is released under the [Open Software License 3.0](https://opensource.org/licenses/OSL-3.0) (OSL-3.0).
 
 ## Support
 
-If you find a bug in our extension, [open a new issue](https://github.com/taxjar/taxjar-magento2-extension/issues/new) right here in GitHub. For general questions about TaxJar or specific issues with your store, please [contact us](http://www.taxjar.com/contact/) after going through our extension guide.
+If you find a bug in this extension, or you want to request a new feature, don't be afraid to open a new issue. Please notice that this extension is not being developed by Taxdoo and is not officially supported by the company. It's been made for self-educational purposes and fun.

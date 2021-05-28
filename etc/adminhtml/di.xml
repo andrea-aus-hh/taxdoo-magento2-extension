@@ -1,28 +1,31 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool" type="Magento\Ui\DataProvider\Modifier\Pool">
-        <arguments>
-            <argument name="modifiers" xsi:type="array">
-                <item name="TaxTip" xsi:type="array">
-                    <item name="class" xsi:type="string">Taxjar\SalesTax\Ui\DataProvider\Product\Form\Modifier\TaxTip</item>
-                    <item name="sortOrder" xsi:type="number">10</item>
-                </item>
-            </argument>
-        </arguments>
-    </virtualType>
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
-        <plugin name="taxjar_salestax_additional_columns" type="Taxjar\SalesTax\Plugin\AddTjSyncDateToGrid" />
+        <plugin name="taxdoo_vat_additional_columns" type="Taxdoo\VAT\Plugin\AddTdSyncDateToGrid" />
     </type>
     <type name="Magento\Framework\View\Element\Message\MessageConfigurationsPool">
         <arguments>
             <argument name="configurationsMap" xsi:type="array">
-                <item name="tjSandboxWarning" xsi:type="array">
+                <item name="tdSandboxWarning" xsi:type="array">
                     <item name="renderer" xsi:type="const">\Magento\Framework\View\Element\Message\Renderer\BlockRenderer::CODE</item>
                     <item name="data" xsi:type="array">
-                        <item name="template" xsi:type="string">Taxjar_SalesTax::messages/tjSandboxWarning.phtml</item>
+                        <item name="template" xsi:type="string">Taxdoo_VAT::messages/tdSandboxWarning.phtml</item>
+                    </item>
+                </item>
+                <item name="tdAccountResponse" xsi:type="array">
+                    <item name="renderer" xsi:type="const">\Magento\Framework\View\Element\Message\Renderer\BlockRenderer::CODE</item>
+                    <item name="data" xsi:type="array">
+                        <item name="template" xsi:type="string">Taxdoo_VAT::messages/tdAccountResponse.phtml</item>
                     </item>
                 </item>
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Framework\Notification\MessageList">
+       <arguments>
+           <argument name="messages" xsi:type="array">
+               <item name="Notification" xsi:type="string">Taxdoo\VAT\Model\Notification</item>
+           </argument>
+       </arguments>
+   </type>
 </config>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,15 +9,15 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti. 
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model;
+namespace Taxdoo\VAT\Model;
 
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class Feed extends \Magento\AdminNotification\Model\Feed
 {
@@ -30,7 +30,7 @@ class Feed extends \Magento\AdminNotification\Model\Feed
     {
         $httpPath = $this->_backendConfig->isSetFlag(self::XML_USE_HTTPS_PATH) ? 'https://' : 'http://';
         if ($this->_feedUrl === null) {
-            $this->_feedUrl = $httpPath . TaxjarConfig::TAXJAR_FEED_URL;
+            $this->_feedUrl = $httpPath . TaxdooConfig::TAXDOO_FEED_URL;
         }
         return $this->_feedUrl;
     }

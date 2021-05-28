@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,13 +9,13 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti. 
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Model\Transaction;
+namespace Taxdoo\VAT\Model\Transaction;
 
 use Magento\Framework\Api\Filter;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -24,11 +24,11 @@ use Magento\Store\Model\StoreManager;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
-use Taxjar\SalesTax\Model\Logger;
-use Taxjar\SalesTax\Model\TransactionFactory;
-use Taxjar\SalesTax\Model\Transaction\OrderFactory;
-use Taxjar\SalesTax\Model\Transaction\RefundFactory;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
+use Taxdoo\VAT\Model\Logger;
+use Taxdoo\VAT\Model\TransactionFactory;
+use Taxdoo\VAT\Model\Transaction\OrderFactory;
+use Taxdoo\VAT\Model\Transaction\RefundFactory;
 
 class Backfill
 {
@@ -48,17 +48,17 @@ class Backfill
     protected $storeManager;
 
     /**
-     * @var \Taxjar\SalesTax\Model\TransactionFactory
+     * @var \Taxdoo\SalesTax\Model\TransactionFactory
      */
     protected $transactionFactory;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\OrderFactory
+     * @var \Taxdoo\SalesTax\Model\Transaction\OrderFactory
      */
     protected $orderFactory;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\RefundFactory
+     * @var \Taxdoo\SalesTax\Model\Transaction\RefundFactory
      */
     protected $refundFactory;
 
@@ -83,14 +83,14 @@ class Backfill
     protected $searchCriteriaBuilder;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Logger
+     * @var \Taxdoo\SalesTax\Model\Logger
      */
     protected $logger;
 
     /**
-     * @var TaxjarConfig
+     * @var TaxdooConfig
      */
-    protected $taxjarConfig;
+    protected $taxdooConfig;
 
     /**
      * @param ScopeConfigInterface $scopeConfig
@@ -104,7 +104,7 @@ class Backfill
      * @param \Magento\Framework\Api\FilterBuilder $filterBuilder
      * @param \Magento\Framework\Api\Search\FilterGroupBuilder $filterGroupBuilder
      * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
-     * @param TaxjarConfig $taxjarConfig
+     * @param TaxdooConfig $taxdooConfig
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -118,7 +118,7 @@ class Backfill
         \Magento\Framework\Api\FilterBuilder $filterBuilder,
         \Magento\Framework\Api\Search\FilterGroupBuilder $filterGroupBuilder,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
-        TaxjarConfig $taxjarConfig
+        TaxdooConfig $taxdooConfig
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->request = $request;
@@ -126,12 +126,12 @@ class Backfill
         $this->transactionFactory = $transactionFactory;
         $this->orderFactory = $orderFactory;
         $this->refundFactory = $refundFactory;
-        $this->logger = $logger->setFilename(TaxjarConfig::TAXJAR_TRANSACTIONS_LOG)->force();
+        $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG)->force();
         $this->orderRepository = $orderRepository;
         $this->filterBuilder = $filterBuilder;
         $this->filterGroupBuilder = $filterGroupBuilder;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
-        $this->taxjarConfig = $taxjarConfig;
+        $this->taxdooConfig = $taxdooConfig;
     }
 
     /**
@@ -145,10 +145,10 @@ class Backfill
     ) {
         // @codingStandardsIgnoreEnd
 
-        $this->apiKey = $this->taxjarConfig->getApiKey();
+        $this->apiKey = $this->taxdooConfig->getApiKey();
 
         if (!$this->apiKey) {
-            throw new LocalizedException(__('Could not sync transactions with TaxJar. Please make sure you have an API key.'));
+            throw new LocalizedException(__('Could not sync transactions with Taxdoo. Please make sure you have an API key.'));
         }
 
         $statesToMatch = ['complete', 'closed'];
@@ -165,7 +165,7 @@ class Backfill
             $toDate = $data['to_date'];
         }
 
-        $this->logger->log('Initializing TaxJar transaction sync');
+        $this->logger->log('Initializing Taxdoo transaction sync');
 
         if (!empty($fromDate)) {
             $fromDate = (new \DateTime($fromDate));

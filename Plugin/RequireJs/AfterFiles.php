@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,19 +9,19 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Plugin\RequireJs;
+namespace Taxdoo\VAT\Plugin\RequireJs;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\RequireJs\Config\File\Collector\Aggregated;
 use Magento\Theme\Model\Theme;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class AfterFiles
 {
@@ -51,7 +51,7 @@ class AfterFiles
         $result,
         Theme $theme = null
     ) {
-        $isEnabled = $this->scopeConfig->getValue(TaxjarConfig::TAXJAR_ADDRESS_VALIDATION);
+        $isEnabled = False; //$this->scopeConfig->getValue(TaxdooConfig::TAXDOO_ADDRESS_VALIDATION);
         $areaCode = '';
 
         try {
@@ -65,7 +65,7 @@ class AfterFiles
         // If address validation is disabled, remove frontend RequireJs dependencies
         if (!$isEnabled && $areaCode == 'frontend') {
             foreach ($result as $key => &$file) {
-                if ($file->getModule() == 'Taxjar_SalesTax') {
+                if ($file->getModule() == 'VAT') {
                     unset($result[$key]);
                 }
             }

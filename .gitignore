@@ -1,2 +1,3 @@
 Test/Integration/credentials.php
 vendor
+.DS_Store

@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,20 +9,20 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Block\Adminhtml;
+namespace Taxdoo\VAT\Block\Adminhtml;
 
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Model\UrlInterface;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Store\Model\ScopeInterface;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
-use Taxjar\SalesTax\Helper\Data as TaxjarHelper;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
+use Taxdoo\VAT\Helper\Data as TaxdooHelper;
 
 class TransactionSync extends PopupField
 {
@@ -30,7 +30,7 @@ class TransactionSync extends PopupField
      * @var string
      */
     // @codingStandardsIgnoreStart
-    protected $_template = 'Taxjar_SalesTax::transaction_sync.phtml';
+    protected $_template = 'Taxdoo_VAT::transaction_sync.phtml';
     // @codingStandardsIgnoreEnd
 
     /**
@@ -44,7 +44,7 @@ class TransactionSync extends PopupField
     protected $scopeConfig;
 
     /**
-     * @var \Taxjar\SalesTax\Helper\Data
+     * @var \Taxdoo\VAT\Helper\Data
      */
     protected $helper;
 
@@ -56,7 +56,7 @@ class TransactionSync extends PopupField
     public function __construct(
         Context $context,
         UrlInterface $backendUrl,
-        TaxjarHelper $helper,
+        TaxdooHelper $helper,
         array $data = []
     ) {
         $this->scopeConfig = $context->getScopeConfig();
@@ -83,7 +83,7 @@ class TransactionSync extends PopupField
      */
     public function isConnected()
     {
-        $isConnected = $this->scopeConfig->getValue(TaxjarConfig::TAXJAR_CONNECTED);
+        $isConnected = $this->scopeConfig->getValue(TaxdooConfig::TAXDOO_CONNECTED);
 
         if ($isConnected) {
             return true;
@@ -123,7 +123,7 @@ class TransactionSync extends PopupField
             $popupUrl .= '&email=' . urlencode($this->getStoreGeneralEmail());
         }
 
-        $popupUrl .= '&plugin=magento2&version=' . TaxjarConfig::TAXJAR_VERSION;
+        $popupUrl .= '&plugin=magento2&version=' . TaxdooConfig::TAXDOO_VERSION;
 
         return $popupUrl;
     }

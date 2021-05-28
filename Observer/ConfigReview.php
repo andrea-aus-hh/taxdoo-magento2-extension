@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,21 +9,22 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Observer;
+namespace Taxdoo\VAT\Observer;
 
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\Observer;
-use Taxjar\SalesTax\Model\Tax\NexusFactory;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
+use \Taxdoo\VAT\Model\ClientFactory;
+use Magento\Framework\Exception\LocalizedException;
 
 class ConfigReview implements ObserverInterface
 {
@@ -53,14 +54,14 @@ class ConfigReview implements ObserverInterface
     protected $scopeConfig;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Tax\NexusFactory
+     * @var TaxdooConfig
      */
-    protected $nexusFactory;
+    protected $taxdooConfig;
 
     /**
-     * @var TaxjarConfig
+     * @var \Taxdoo\VAT\Model\ClientFactory
      */
-    protected $taxjarConfig;
+    protected $clientFactory;
 
     /**
      * @param \Magento\Framework\App\Request\Http $request
@@ -68,8 +69,7 @@ class ConfigReview implements ObserverInterface
      * @param ManagerInterface $eventManager
      * @param \Magento\Framework\Message\ManagerInterface $messageManager
      * @param ScopeConfigInterface $scopeConfig
-     * @param NexusFactory $nexusFactory
-     * @param TaxjarConfig $taxjarConfig
+     * @param TaxdooConfig $taxdooConfig
      */
     public function __construct(
         \Magento\Framework\App\Request\Http $request,
@@ -77,16 +77,21 @@ class ConfigReview implements ObserverInterface
         ManagerInterface $eventManager,
         \Magento\Framework\Message\ManagerInterface $messageManager,
         ScopeConfigInterface $scopeConfig,
-        NexusFactory $nexusFactory,
-        TaxjarConfig $taxjarConfig
+        \Taxdoo\VAT\Model\ClientFactory $clientFactory,
+        TaxdooConfig $taxdooConfig,
+        \Magento\Framework\Notification\NotifierInterface $notifierPool
     ) {
         $this->request = $request;
         $this->cache = $cache;
         $this->eventManager = $eventManager;
         $this->messageManager = $messageManager;
         $this->scopeConfig = $scopeConfig;
-        $this->nexusFactory = $nexusFactory;
-        $this->taxjarConfig = $taxjarConfig;
+        $this->taxdooConfig = $taxdooConfig;
+        $this->clientFactory = $clientFactory;
+        $this->notifierPool = $notifierPool;
+
+        $this->client = $this->clientFactory->create();
+        $this->client->showResponseErrors(true);
     }
 
     /**
@@ -100,48 +105,18 @@ class ConfigReview implements ObserverInterface
         // @codingStandardsIgnoreEnd
         $configSection = $this->request->getParam('section');
 
+        $event = $observer->getEvent();
+        $eventName = $event->getName();
+
         if ($configSection == 'tax') {
-            $enabled = $this->scopeConfig->getValue(TaxjarConfig::TAXJAR_ENABLED);
+            $enabled = $this->scopeConfig->getValue(TaxdooConfig::TAXDOO_ENABLED);
 
             if ($enabled) {
-                $this->_reviewNexusAddresses();
-                $this->_reviewAddressValidation();
                 $this->_reviewSandboxMode();
+                $this->_checkApiKey();
             }
         }
-
         return $this;
-    }
-
-    /**
-     * @return void
-     * @SuppressWarnings(Generic.Files.LineLength.TooLong)
-     */
-    private function _reviewNexusAddresses()
-    {
-        $nexusAddresses = $this->nexusFactory->create()->getCollection();
-
-        if (!$nexusAddresses->getSize()) {
-            // @codingStandardsIgnoreStart
-            $this->messageManager->addErrorMessage(__('You have no nexus addresses loaded in Magento. Go to Stores > Nexus Addresses to sync from your TaxJar account or add a new address.'));
-            // @codingStandardsIgnoreEnd
-        }
-    }
-
-    /**
-     * @return void
-     * @SuppressWarnings(Generic.Files.LineLength.TooLong)
-     */
-    private function _reviewAddressValidation()
-    {
-        $enabled = $this->scopeConfig->getValue(TaxjarConfig::TAXJAR_ADDRESS_VALIDATION);
-        $prevEnabled = $this->cache->load('taxjar_salestax_config_address_validation');
-
-        if (isset($prevEnabled) && $prevEnabled != $enabled) {
-            // @codingStandardsIgnoreStart
-            $this->messageManager->addWarningMessage(__('Please redeploy production mode in the Magento CLI ($ bin/magento deploy:mode:set production) to ensure address validation works correctly.'));
-            // @codingStandardsIgnoreEnd
-        }
     }
 
     /**
@@ -150,10 +125,21 @@ class ConfigReview implements ObserverInterface
      */
     private function _reviewSandboxMode()
     {
-        if ($this->taxjarConfig->isSandboxEnabled()) {
+        if ($this->taxdooConfig->isSandboxEnabled()) {
             // @codingStandardsIgnoreStart
-            $this->messageManager->addComplexWarningMessage('tjSandboxWarning');
+            $this->messageManager->addComplexWarningMessage('tdSandboxWarning');
             // @codingStandardsIgnoreEnd
         }
+    }
+
+    private function _checkApiKey()
+    {
+      $response = $this->client->checkApiKey();
+      if (!$response) {
+        $this->messageManager->addComplexErrorMessage('tdAccountResponse',['accepted' => False]);
+
+      } else {
+        $this->messageManager->addComplexSuccessMessage('tdAccountResponse',['accepted' => True, 'response' => $response]);
+      }
     }
 }

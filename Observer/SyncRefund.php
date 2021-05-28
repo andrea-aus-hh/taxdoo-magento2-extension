@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,21 +9,21 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Observer;
+namespace Taxdoo\VAT\Observer;
 
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Registry;
-use Taxjar\SalesTax\Model\Transaction\OrderFactory;
-use Taxjar\SalesTax\Model\Transaction\RefundFactory;
-use Taxjar\SalesTax\Helper\Data as TaxjarHelper;
+use Taxdoo\VAT\Model\Transaction\OrderFactory;
+use Taxdoo\VAT\Model\Transaction\RefundFactory;
+use Taxdoo\VAT\Helper\Data as TaxdooHelper;
 
 class SyncRefund implements ObserverInterface
 {
@@ -33,12 +33,12 @@ class SyncRefund implements ObserverInterface
     protected $messageManager;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\OrderFactory
+     * @var \Taxdoo\VAT\Model\Transaction\OrderFactory
      */
     protected $orderFactory;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Transaction\RefundFactory
+     * @var \Taxdoo\VAT\Model\Transaction\RefundFactory
      */
     protected $refundFactory;
 
@@ -48,7 +48,7 @@ class SyncRefund implements ObserverInterface
     protected $registry;
 
     /**
-     * @var \Taxjar\SalesTax\Helper\Data
+     * @var \Taxdoo\VAT\Helper\Data
      */
     protected $helper;
 
@@ -62,7 +62,7 @@ class SyncRefund implements ObserverInterface
         ManagerInterface $messageManager,
         OrderFactory $orderFactory,
         RefundFactory $refundFactory,
-        TaxjarHelper $helper,
+        TaxdooHelper $helper,
         Registry $registry
     ) {
         $this->messageManager = $messageManager;
@@ -85,8 +85,8 @@ class SyncRefund implements ObserverInterface
         $orderTransaction = $this->orderFactory->create();
 
         if ($orderTransaction->isSyncable($order)) {
-            if (!$this->registry->registry('taxjar_sync_' . $eventName)) {
-                $this->registry->register('taxjar_sync_' . $eventName, true);
+            if (!$this->registry->registry('taxdoo_sync_' . $eventName)) {
+                $this->registry->register('taxdoo_sync_' . $eventName, true);
             } else {
                 return $this;
             }

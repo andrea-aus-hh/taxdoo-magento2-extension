@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,19 +9,19 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti. 
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Controller\Adminhtml\Config;
+namespace Taxdoo\VAT\Controller\Adminhtml\Config;
 
 use Magento\Backend\App\Action\Context;
 use Magento\Config\Model\ResourceModel\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\ReinitableConfigInterface;
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 class Upgrade extends \Magento\Backend\App\AbstractAction
 {
@@ -73,7 +73,7 @@ class Upgrade extends \Magento\Backend\App\AbstractAction
      */
     public function execute()
     {
-        $this->resourceConfig->saveConfig(TaxjarConfig::TAXJAR_TRANSACTION_SYNC, 1, 'default', 0);
+        $this->resourceConfig->saveConfig(TaxdooConfig::TAXDOO_TRANSACTION_SYNC, 1, 'default', 0);
         $this->reinitableConfig->reinit();
         $this->messageManager->addSuccessMessage(__('Transaction sync is now enabled.'));
         $this->_redirect('adminhtml/system_config/edit', ['section' => 'tax']);

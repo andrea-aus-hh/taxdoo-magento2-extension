@@ -1,6 +1,6 @@
 <?php
 /**
- * Taxjar_SalesTax
+ * Taxdoo_VAT
  *
  * NOTICE OF LICENSE
  *
@@ -9,15 +9,15 @@
  * It is also available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Taxjar
- * @package    Taxjar_SalesTax
- * @copyright  Copyright (c) 2020 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc. (http://www.taxjar.com)
+ * @category   Taxdoo
+ * @package    Taxdoo_VAT
+ * @copyright  Copyright (c) 2020 TaxJar.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
-namespace Taxjar\SalesTax\Ui\Component\Listing\Column;
+namespace Taxdoo\VAT\Ui\Component\Listing\Column;
 
-use Taxjar\SalesTax\Model\Configuration as TaxjarConfig;
+use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
 use \Magento\Sales\Api\OrderRepositoryInterface;
 use \Magento\Framework\View\Element\UiComponent\ContextInterface;
@@ -45,7 +45,7 @@ class SyncedOrder extends Column
     protected $timezone;
 
     /**
-     * @var \Taxjar\SalesTax\Model\Logger
+     * @var \Taxdoo\VAT\Model\Logger
      */
     protected $logger;
 
@@ -55,7 +55,7 @@ class SyncedOrder extends Column
      * @param OrderRepositoryInterface $orderRepository
      * @param SearchCriteriaBuilder $criteria
      * @param Timezone $timezone
-     * @param \Taxjar\SalesTax\Model\Logger $logger
+     * @param \Taxdoo\VAT\Model\Logger $logger
      * @param array $components
      * @param array $data
      */
@@ -65,14 +65,14 @@ class SyncedOrder extends Column
         OrderRepositoryInterface $orderRepository,
         SearchCriteriaBuilder $criteria,
         Timezone $timezone,
-        \Taxjar\SalesTax\Model\Logger $logger,
+        \Taxdoo\VAT\Model\Logger $logger,
         array $components = [],
         array $data = []
     ) {
         $this->orderRepository = $orderRepository;
         $this->searchCriteria  = $criteria;
         $this->timezone = $timezone;
-        $this->logger = $logger->setFilename(TaxjarConfig::TAXJAR_DEFAULT_LOG);
+        $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_DEFAULT_LOG);
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
 
@@ -87,9 +87,9 @@ class SyncedOrder extends Column
                 $orderSyncDate = '';
 
                 try {
-                    if (isset($item['tj_salestax_sync_date'])) {
+                    if (isset($item['td_salestax_sync_date'])) {
                         $orderSyncDate = $this->timezone->formatDate(
-                            new \DateTime($item['tj_salestax_sync_date']),
+                            new \DateTime($item['td_salestax_sync_date']),
                             \IntlDateFormatter::MEDIUM,
                             true
                         );
