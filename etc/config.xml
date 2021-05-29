@@ -20,8 +20,7 @@
     <default>
         <tax>
             <taxdoo>
-                <product_tax_classes>2</product_tax_classes>
-                <customer_tax_classes>3</customer_tax_classes>
+
             </taxdoo>
         </tax>
     </default>
