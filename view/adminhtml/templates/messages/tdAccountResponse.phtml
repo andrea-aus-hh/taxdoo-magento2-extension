@@ -17,15 +17,33 @@
 
 /** @var \Magento\Framework\View\Element\Template $block */
 
-$acceptedMsg = __('Taxdoo seems to have accepted your API Token. Is this your Taxdoo email? ');
+$acceptedMsg = __('Taxdoo seems to have accepted your API Token. Does your Taxdoo email look like this? ');
 $rejectedMsg = __('The Taxdoo API Token seems to be wrong. You can find the correct one in the ');
 $urlApiKey = 'https://dashboard.taxdoo.com/api_keys.php';
 $href = '<a href="%1" target="_blank" rel="noopener">' . __('Taxdoo Dashboard') . '</a>';
 
 
 if($block->getData('accepted')) {
-  echo $block->escapeHtml(__($acceptedMsg . ' ' . $block->getData('response')['account'] ), ['div']);
+  echo $block->escapeHtml(__($acceptedMsg . ' ' . obfuscate_email($block->getData('response')['account']) ), ['div']);
 } else {
-  //echo $block->escapeHtml(__($rejectedMsg), ['div']);
   echo $block->escapeHtml(__($rejectedMsg . ' ' . $href, [$urlApiKey]), ['a']);
+}
+
+/*
+ * Many thanks to msturdy from stackoverflow for this function : https://stackoverflow.com/a/20545505
+ */
+
+function obfuscate_email($email)
+{
+    $em   = explode("@",$email);
+    $name = implode('@', array_slice($em, 0, count($em)-1));
+    if (strlen($name) >= 3) {
+      $len = 3;
+      $asterisks = strlen($name) - 3;
+    } else {
+      $len = 0;
+      $asterisks = strlen($name);
+    }
+
+    return substr($name,0, $len) . str_repeat('*', $asterisks) . "@" . end($em);
 }
