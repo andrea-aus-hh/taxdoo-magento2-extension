@@ -160,13 +160,16 @@ class Order extends \Taxdoo\VAT\Model\Transaction
     }
 
     /**
-     * Determines if an order can be synced
+     * Determines if an order can be synced.
+     * It is a function that in the original Taxjar plugin checks many more aspects, that in our case aren't relevant
+     * In our case it just checks that the order has been completed or closed, and that transaction sync is active.
      *
      * @param \Magento\Sales\Model\Order $order
      * @return bool
      */
     public function isSyncable(
-        \Magento\Sales\Model\Order $order
+        \Magento\Sales\Model\Order $order,
+        $forceSync = false
     ) {
         $states = ['complete', 'closed'];
 
@@ -179,10 +182,11 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         }
 
         // Check if transaction sync is disabled at the store level OR at the store AND website levels
+        // Check also if the syncing should be nonetheless forced - eg for backfilling purposes
         $storeSyncEnabled = $this->helper->isTransactionSyncEnabled($order->getStoreId(), 'store');
         $websiteSyncEnabled = $this->helper->isTransactionSyncEnabled($order->getStore()->getWebsiteId(), 'website');
 
-        if (!$storeSyncEnabled || (!$websiteSyncEnabled && !$storeSyncEnabled)) {
+        if ((!$storeSyncEnabled || (!$websiteSyncEnabled && !$storeSyncEnabled)) && !$forceSync) {
             return false;
         }
 

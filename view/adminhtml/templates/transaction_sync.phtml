@@ -18,9 +18,9 @@
 // @codingStandardsIgnoreFile
 
 ?>
-<p class='note'><span>Sync orders and refunds with Taxdoo. If you activate this option, complete and closed orders will sync automatically on update.</span></p><br/>
+<p class='note'><span>Sync orders and refunds with Taxdoo. If you activate this option, complete and closed orders will sync automatically on update. If you don't, you can still manually backfill transactions.</span></p><br/>
 
-<?php if ($block->isEnabled()) { ?>
+
     <p><button type="button" class="scalable" onclick="openTransactionSyncModal()"><span>Sync Transactions</span></button></p>
     <script>
         require([
@@ -115,4 +115,3 @@
             </div>
         </div>
     </div>
-<?php } ?>

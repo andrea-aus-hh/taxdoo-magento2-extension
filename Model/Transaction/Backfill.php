@@ -11,7 +11,7 @@
  *
  * @category   Taxdoo
  * @package    Taxdoo_VAT
- * @copyright  Copyright (c) 2021 Andrea Lazzaretti. 
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
@@ -257,7 +257,7 @@ class Backfill
         foreach ($orders as $order) {
             $orderTransaction = $this->orderFactory->create();
 
-            if ($orderTransaction->isSyncable($order)) {
+            if ($orderTransaction->isSyncable($order,true)) { //The "true" forces the syncing, even if transaction sync isn't active
                 $orderTransaction->build($order);
                 $orderTransaction->push();
 
