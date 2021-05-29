@@ -46,29 +46,23 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         $discount = (float) $order->getDiscountAmount();
         $shippingDiscount = (float) $order->getShippingDiscountAmount();
         $salesTax = (float) $order->getTaxAmount();
-        $currency = $order->getOrderCurrencyCode();
+        $currencyCode = $order->getOrderCurrencyCode();
 
         $shipments = $order->getShipmentsCollection();
-        foreach ($shipments as $shipment) { //Bad solution, a better one?
-          $currentShipment = $shipment;
-        }
+        $currentShipment = $shipments->getFirstItem();
         $currentShipmentCreatedAt = new \DateTime($currentShipment->getCreatedAt());
 
         $invoices = $order->getInvoiceCollection();
-        foreach ($invoices as $invoice) { //Bad solution, a better one?
-          $currentInvoice = $invoice;
-        }
+        $currentInvoice = $invoices->getFirstItem();
         $currentInvoiceCreatedAt = new \DateTime($currentInvoice->getCreatedAt());
 
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
-        foreach ($transactions as $transaction) { //Bad solution, a better one?
-          $currentTransaction = $transaction;
-        }
 
-        if (isset($currentTransaction)) { //If there is a transaction, we use it. Otherwise we use the Invoice date
-        $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
+        if (!empty($transactions)) { //If there is a transaction (payment), we use it. Otherwise we use the Invoice date
+          $currentTransaction = $transactions->getFirstItem();
+          $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
         } else {
-        $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+          $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
         }
 
         $payment = $order->getPayment();
@@ -90,22 +84,15 @@ class Order extends \Taxdoo\VAT\Model\Transaction
           'billingAddress' => $this->buildToAddress($order, "billing"),
           'senderAddress' => $this->buildFromAddress($order),
           'shipping' => $shipping,
-          'transactionCurrency' => $currency,
-          'items' => $this->buildLineItems($order, $order->getAllItems()), //controlla questo metodo, assolutamente
+          'transactionCurrency' => $currencyCode,
+          'items' => $this->buildLineItems($order, $order->getAllItems()),
           'paymentChannel' => $paymentMethod,
           'paymentNumber' => $paymentId,
           'invoiceDate' => $currentInvoiceCreatedAt->format(\DateTime::RFC3339),
-    ];
-    $ordersArray = [];
-    $ordersArray['orders'][] = $newOrder;
-
-        /*$this->request = array_merge(
-            $newOrder,
-            $this->buildFromAddress($order),
-            $this->buildToAddress($order),
-            $this->buildLineItems($order, $order->getAllItems()),
-            $this->buildCustomerExemption($order)
-        );*/
+          'invoiceNumber' => $currentInvoice->getIncrementId(),
+        ];
+        $ordersArray = [];
+        $ordersArray['orders'][] = $newOrder;
 
         $this->request = $ordersArray;
 
@@ -113,20 +100,20 @@ class Order extends \Taxdoo\VAT\Model\Transaction
     }
 
     /**
-     * Push an order transaction to SmartCalcs
+     * Push an order transaction to Taxdoo
      *
      * @param string|null $forceMethod
      * @return void
      */
     public function push($forceMethod = null) {
         $orderUpdatedAt = $this->originalOrder->getUpdatedAt();
-        $orderSyncedAt = $this->originalOrder->getTjSalestaxSyncDate(); //si ma questo metodo che cazzo è
+        $orderSyncedAt = $this->originalOrder->getTdSalestaxSyncDate();
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
         if (!$this->isSynced($orderSyncedAt)) {
             $method = 'POST';
         } else {
-            if ($orderSyncedAt < $orderUpdatedAt) { //ci sono state modifiche?
+            if ($orderSyncedAt < $orderUpdatedAt) {
                 $method = 'PUT';
             } else {
                 $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' not updated since last sync', 'skip');
@@ -189,12 +176,6 @@ class Order extends \Taxdoo\VAT\Model\Transaction
 
         if (!in_array($order->getState(), $states)) {
             return false;
-        }
-
-        if ($order->getIsVirtual()) {
-            $address = $order->getBillingAddress();
-        } else {
-            $address = $order->getShippingAddress();
         }
 
         // Check if transaction sync is disabled at the store level OR at the store AND website levels

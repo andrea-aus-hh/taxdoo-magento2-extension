@@ -17,7 +17,7 @@
 
 namespace Taxdoo\VAT\Model;
 
-class Notification implements \Magento\Framework\Notification\MessageInterface
+class NotificationAPIToken implements \Magento\Framework\Notification\MessageInterface
 {
   public function __construct(
       \Taxdoo\VAT\Model\ClientFactory $clientFactory
@@ -43,9 +43,7 @@ class Notification implements \Magento\Framework\Notification\MessageInterface
    }
    public function getText()
    {
-       // message text
-
-       return "Your API Token wasn't accepted by Taxdoo. Transactions and returns won't be synchronized.";
+       return __("Your API Token wasn't accepted by Taxdoo. Transactions and returns won't be synchronized.");
    }
    public function getSeverity()
    {

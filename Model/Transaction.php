@@ -50,11 +50,6 @@ class Transaction
     protected $productRepository;
 
     /**
-     * @var \Magento\Tax\Api\TaxClassRepositoryInterface
-     */
-    protected $taxClassRepository;
-
-    /**
      * @var \Taxdoo\VAT\Model\Client
      */
     protected $client;
@@ -79,7 +74,6 @@ class Transaction
      * @param \Taxdoo\VAT\Model\ClientFactory $clientFactory
      * @param \Magento\Catalog\Model\ProductRepository $productRepository
      * @param \Magento\Directory\Model\RegionFactory $regionFactory
-     * @param \Magento\Tax\Api\TaxClassRepositoryInterface $taxClassRepository
      * @param \Taxdoo\VAT\Model\Logger $logger
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param TaxdooHelper $helper
@@ -90,7 +84,6 @@ class Transaction
         \Taxdoo\VAT\Model\ClientFactory $clientFactory,
         \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Directory\Model\RegionFactory $regionFactory,
-        \Magento\Tax\Api\TaxClassRepositoryInterface $taxClassRepository,
         \Taxdoo\VAT\Model\Logger $logger,
         \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Sales\Api\TransactionRepositoryInterface $repository,
@@ -102,7 +95,6 @@ class Transaction
         $this->clientFactory = $clientFactory;
         $this->productRepository = $productRepository;
         $this->regionFactory = $regionFactory;
-        $this->taxClassRepository = $taxClassRepository;
         $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG);
         $this->objectManager = $objectManager;
         $this->repository = $repository;
@@ -305,21 +297,6 @@ class Transaction
         }
 
         return $lineItems;
-    }
-
-    /**
-     * Add customer_id to transaction
-     *
-     * @param \Magento\Sales\Model\Order $order
-     * @return array
-     */
-    protected function buildCustomerExemption($order)
-    {
-        if ($order->getCustomerId()) {
-            return ['customer_id' => $order->getCustomerId()];
-        }
-
-        return [];
     }
 
 

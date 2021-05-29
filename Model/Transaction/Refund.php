@@ -53,7 +53,7 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $salesTax = (float) $creditmemo->getTaxAmount();
         $adjustment = (float) $creditmemo->getAdjustment();
         $itemDiscounts = 0;
-        $currency = $creditmemo->getOrderCurrencyCode();
+        $currencyCode = $creditmemo->getOrderCurrencyCode();
 
         $this->originalOrder = $order;
         $this->originalRefund = $creditmemo;
@@ -61,21 +61,15 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $createdAt = new \DateTime($order->getCreatedAt());
 
         $invoices = $order->getInvoiceCollection();
-
-        foreach ($invoices as $invoice) { //Bad solution, a better one?
-          $currentInvoice = $invoice;
-        }
+        $currentInvoice = $invoices->getFirstItem();
         $currentInvoiceCreatedAt = new \DateTime($currentInvoice->getCreatedAt());
 
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
-        foreach ($transactions as $transaction) { //Bad solution, a better one?
-          $currentTransaction = $transaction;
-        }
-
-        if (isset($currentTransaction)) { //If there is a transaction, we use it. Otherwise we use the Invoice date
-        $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
+        if (!empty($transactions)) { //If there is a transaction (payment), we use it. Otherwise we use the Invoice date
+          $currentTransaction = $transactions->getFirstItem();
+          $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
         } else {
-        $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+          $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
         }
 
         $refund = [
@@ -90,7 +84,7 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
             "refundNumber" => $creditmemo->getIncrementId()
           ),
           'paymentDate' => $transactionDate->format(\DateTime::RFC3339),
-          'transactionCurrency' => $currency,
+          'transactionCurrency' => $currencyCode,
           'items' => $this->buildLineItems($order, $creditmemo->getAllItems(), 'refund'),
           'shipping' => -$shipping
         ];

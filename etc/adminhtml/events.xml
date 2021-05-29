@@ -24,7 +24,4 @@
     <event name="taxdoo_vat_backfill_transactions">
         <observer name="taxdoo_salestax_backfill_transactions" instance="Taxdoo\VAT\Observer\BackfillTransactions"/>
     </event>
-    <event name="controller_action_predispatch">
-        <observer name="taxdoo_salestax_predispatch_admin_action_controller_observer" instance="Taxdoo\VAT\Observer\AdminNotifications"/>
-    </event>
 </config>

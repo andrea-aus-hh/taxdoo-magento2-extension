@@ -32,7 +32,7 @@ if ($block->getSyncedAtDate($order)) {
 ?>
 <?php if (!empty($orderSyncDate)): ?>
 <tr>
-    <th><?php /* @escapeNotVerified */ echo __('Synced to Taxdoo') ?></th>
+    <th><?php /* @escapeNotVerified */ echo __('Synced to Taxdoo (or sandbox)') ?></th>
     <td><?php /* @escapeNotVerified */ echo $orderSyncDate ?></td>
 </tr>
 <?php endif; ?>

@@ -22,7 +22,7 @@
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="visible" xsi:type="boolean">false</item>
-                    <item name="label" xsi:type="string" translate="true">Synced to Taxdoo</item>
+                    <item name="label" xsi:type="string" translate="true">Synced to Taxdoo (or sandbox)</item>
                     <item name="sortable" xsi:type="boolean">false</item>
                 </item>
             </argument>

@@ -1,12 +1,14 @@
 # Magento 2 Taxdoo Plugin
 
-Attempting to write a Taxdoo plugin for Magento 2 shops. Its features are at the moment the basic ones: backfilling old orders and refunds, automatically syncing new orders and refunds, as soon as they are closed. If someone with a real Magento shop wants to experiment and give feedback, I'm more than happy. The plugin supports Taxdoo's sandbox mode, so that your production calculations can stay safe.
+A Taxdoo extension for Magento 2 shops. Its features are at the moment the basic ones: backfilling old orders and refunds, automatically syncing new orders and refunds.
+
+Since I could only test this extension on my own Magento 2 test system, I'm more than happy for every further tester. The plugin supports Taxdoo's sandbox mode, so that production data can stay safe.
 
 This code is a fork of the open source [Magento 2 Taxjar plugin](https://github.com/taxjar/taxjar-magento2-extension), adapted to work with its European epigone Taxdoo. Being a derivative product, it's released under the same license, the [Open Software License 3.0](https://opensource.org/licenses/OSL-3.0) (OSL-3.0).
 
 ## Getting Started
 
-Download the extension as a ZIP file from this repository. Unzip the archive and upload the files to `/app/code/Taxdoo/VAT`. After uploading, run the following [Magento CLI](http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands.html) commands:
+Download the extension as a ZIP file from this repository, or clone it. Upload the files to `/app/code/Taxdoo/VAT` in your Magento 2 directory. After uploading, run the following [Magento CLI](http://devdocs.magento.com/guides/v2.0/config-guide/cli/config-cli-subcommands.html) commands:
 
 ```
 bin/magento module:enable Taxdoo_VAT --clear-static-content
@@ -16,10 +18,24 @@ bin/magento setup:di:compile
 
 These commands will enable the Taxdoo extension, perform necessary database updates, and re-compile your Magento store.
 
-Navigate to Stores->Configuration->Tax to enable the module and enter your API Token. It will give positive feedback if the Token is correct. Turn on Sandbox Mode if you don't want to risk dirtying your existing Taxdoo production data.
-Make sure to add an Origin shipping address under Stores->Configuration, and then Sales->Shipping Settings.
+To start using the extension you'll need to do the following:
+1. Add an origin shipping address under *Stores->Configuration->Sales->Shipping Settings*. Without a complete origin address Taxdoo will reject your requests.
+1. Navigate to *Stores->Configuration->Sales->Tax*, enable the module, enter your API Token and save the configuration. You will get feedback if the token has been accepted or rejected.
+1. (optional) Turn on sandbox mode if you don't want to risk dirtying your existing Taxdoo production data.
+1. (optional) Activate transaction sync if you want all new orders and credit memos to be automatically synced.
+1. (optional) Backfill your old orders and refunds, by clicking on the button *"Sync Transaction"* and following further instructions on the interface.
 
-You can backfill old orders and credit memos. If you activate Transaction Sync, all new complete/closed orders and credit memos will be automatically synced - that is if your API Token is correct.
+Under *Sales->Orders* you can add the column "Synced to Taxdoo (or sandbox)" to the table: every order that you backfilled or automatically synced should contain a sync date. If not, please verify that the API token is correct and that you set a complete origin address. Please notice that the extension will only synchronise complete or closed orders.
+
+If you want to disable the extension, run the following commands:
+
+```
+bin/magento module:disable Taxdoo_VAT --clear-static-content
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+```
+
+**Please notice**: this extension is developed for self-educational purpose and for fun. It is not officially supported by Taxdoo.
 
 ## Tests
 
@@ -31,4 +47,6 @@ Taxdoo's Magento 2 module is released under the [Open Software License 3.0](http
 
 ## Support
 
-If you find a bug in this extension, or you want to request a new feature, don't be afraid to open a new issue. Please notice that this extension is not being developed by Taxdoo and is not officially supported by the company. It's been made for self-educational purposes and fun.
+If you find a bug in this extension, or you want to request a new feature, don't be afraid to open a new issue or get in touch with me.
+
+Please also refer to the [Taxdoo API Documentation](https://dev.taxdoo.com/).
