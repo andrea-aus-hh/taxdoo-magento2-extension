@@ -76,21 +76,6 @@ class TransactionSync extends PopupField
         return parent::_getElementHtml($element) . $this->_toHtml();
     }
 
-    /**
-     * Connected check
-     *
-     * @return bool
-     */
-    public function isConnected()
-    {
-        $isConnected = $this->scopeConfig->getValue(TaxdooConfig::TAXDOO_CONNECTED);
-
-        if ($isConnected) {
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * Transaction sync enabled check
@@ -108,23 +93,4 @@ class TransactionSync extends PopupField
         return $this->helper->isTransactionSyncEnabled();
     }
 
-    /**
-     * Get popup URL
-     *
-     * @return string
-     */
-    public function getPopupUrl()
-    {
-        $popupUrl = $this->getAuthUrl()
-                        . '/smartcalcs/connect/magento/upgrade_account/?store='
-                        . urlencode($this->getStoreOrigin());
-
-        if ($this->getStoreGeneralEmail()) {
-            $popupUrl .= '&email=' . urlencode($this->getStoreGeneralEmail());
-        }
-
-        $popupUrl .= '&plugin=magento2&version=' . TaxdooConfig::TAXDOO_VERSION;
-
-        return $popupUrl;
-    }
 }

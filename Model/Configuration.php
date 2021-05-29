@@ -28,7 +28,6 @@ class Configuration
     const TAXDOO_SANDBOX_API_URL      = 'https://sandbox-api.taxdoo.com';
     const TAXDOO_APIKEY               = 'tax/taxdoo/apikey';
     const TAXDOO_SANDBOX_APIKEY       = 'tax/taxdoo/apikey';
-    const TAXDOO_CONNECTED            = 'tax/taxdoo/connected';
     const TAXDOO_ENABLED              = 'tax/taxdoo/enabled';
     const TAXDOO_LAST_UPDATE          = 'tax/taxdoo/last_update';
     const TAXDOO_SANDBOX_ENABLED      = 'tax/taxdoo/sandbox';

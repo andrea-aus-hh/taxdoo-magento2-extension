@@ -34,7 +34,7 @@
                 </field>
                 <field id="sandbox" translate="label" sortOrder="3" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Sandbox</label>
-                    <comment>Use the Taxdoo sandbox environment to test API sales tax calculations. We recommend only using this mode in a staging environment. Some features may not work as expected.</comment>
+                    <comment>Use the Taxdoo sandbox environment to test this extension. We recommend only using this mode in a staging environment. Some features may not work as expected.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <frontend_model>Taxdoo\VAT\Block\Adminhtml\Multiselect</frontend_model>
                     <depends>

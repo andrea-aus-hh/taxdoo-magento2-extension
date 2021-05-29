@@ -11,7 +11,7 @@
  *
  * @category   Taxdoo
  * @package    Taxdoo_VAT
- * @copyright  Copyright (c) 2021 Andrea Lazzaretti. 
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
@@ -67,7 +67,7 @@ class Upgrade extends \Magento\Backend\App\AbstractAction
     }
 
     /**
-     * Connect to TaxJar
+     * Connect to Taxdoo
      *
      * @return \Magento\Backend\Model\View\Result\Page|\Magento\Backend\Model\View\Result\Redirect
      */

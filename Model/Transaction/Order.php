@@ -165,7 +165,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
      * @param \Magento\Sales\Model\Order $order
      * @return bool
      */
-    public function isSyncable( //Do we need to only accept EUR orders?
+    public function isSyncable(
         \Magento\Sales\Model\Order $order
     ) {
         $states = ['complete', 'closed'];

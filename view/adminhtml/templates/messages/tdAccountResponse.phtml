@@ -11,7 +11,7 @@
  *
  * @category   Taxdoo
  * @package    Taxdoo_VAT
- * @copyright  Copyright (c) 2020 TaxJar.
+ * @copyright  Copyright (c) 2021 Andrea Lazzaretti.
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  */
 
