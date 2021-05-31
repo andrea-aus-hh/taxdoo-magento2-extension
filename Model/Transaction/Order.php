@@ -111,14 +111,11 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
         if (!$this->isSynced($orderSyncedAt)) {
-            $method = 'POST';
+            $method = 'POST'; // This is the ghost of the feature that allowed to call a PUT method to modify a transaction.
+                              // That feature is not implemented yet
         } else {
-            if ($orderSyncedAt < $orderUpdatedAt) {
-                $method = 'PUT';
-            } else {
-                $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' not updated since last sync', 'skip');
+                $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' has already been synced', 'skip');
                 return;
-            }
         }
 
         if ($this->apiKey) {
@@ -135,12 +132,8 @@ class Order extends \Taxdoo\VAT\Model\Transaction
             if ($method == 'POST') {
                 $response = $this->client->postResource('orders', $this->request);
                 $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' created in Taxdoo: ' . json_encode($response), 'api');
-            } else {
-                $response = $this->client->putResource('orders', $this->request['transaction_id'], $this->request);
-                $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' updated in Taxdoo: ' . json_encode($response), 'api');
+                $this->originalOrder->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'))->save();
             }
-
-            $this->originalOrder->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'))->save();
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
             $error = json_decode($e->getMessage());
@@ -149,12 +142,6 @@ class Order extends \Taxdoo\VAT\Model\Transaction
             if (!$forceMethod && $method == 'PUT' && $error && $error->status == 404) {
                 $this->logger->log('Attempting to create order #' . $this->request['orders'][0]['channel']['transactionNumber'], 'retry');
                 return $this->push('POST');
-            }
-
-            // Retry push for existing records using PUT
-            if (!$forceMethod && $method == 'POST' && $error && $error->status == 422) {
-                $this->logger->log('Attempting to update order #' . $this->request['orders'][0]['channel']['transactionNumber'], 'retry');
-                return $this->push('PUT');
             }
         }
     }

@@ -135,16 +135,13 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
         if (!$this->isSynced($refundSyncedAt)) {
-            $method = 'POST';
+            $method = 'POST'; // This is the ghost of the feature that allowed to call a PUT method to modify a transaction.
+                              // That feature is not implemented yet
         } else {
-            if ($refundSyncedAt < $refundUpdatedAt) {
-                $method = 'PUT';
-            } else {
-                $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber']
+            $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber']
                                         . ' for order #' . $this->request['refunds'][0]['source']['transactionNumber']
-                                        . ' not updated since last sync', 'skip');
-                return;
-            }
+                                        . ' has already been synced', 'skip');
+            return;
         }
 
         if ($this->apiKey) {
@@ -163,13 +160,9 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
             if ($method == 'POST') {
                 $response = $this->client->postResource('refunds', $this->request);
                 $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber'] . ' created: ' . json_encode($response), 'api');
-            } else {
-                $response = $this->client->putResource('refunds', $this->request['refunds'][0]['channel']['transactionNumber'], $this->request);
-                $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber'] . ' updated: ' . json_encode($response), 'api');
+                $this->originalRefund->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'));
+                $this->originalRefund->getResource()->saveAttribute($this->originalRefund, 'td_salestax_sync_date');
             }
-
-            $this->originalRefund->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'));
-            $this->originalRefund->getResource()->saveAttribute($this->originalRefund, 'td_salestax_sync_date');
 
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
@@ -179,12 +172,6 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
             if (!$forceMethod && $method == 'PUT' && $error && $error->status == 404) {
                 $this->logger->log('Attempting to create refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber'], 'retry');
                 return $this->push('POST');
-            }
-
-            // Retry push for existing records using PUT
-            if (!$forceMethod && $method == 'POST' && $error && $error->status == 422) {
-                $this->logger->log('Attempting to update refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber'], 'retry');
-                return $this->push('PUT');
             }
         }
     }
