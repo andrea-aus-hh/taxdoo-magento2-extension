@@ -113,7 +113,7 @@ class SyncTransaction implements ObserverInterface
         $eventName = $observer->getEvent()->getName();
         $orderTransaction = $this->orderFactory->create();
 
-        if ($orderTransaction->isSyncable($order)) {
+        if ($orderTransaction->isSyncable($order,false)) { //We're not forcing the sync
             if (!$this->registry->registry('taxdoo_sync_' . $eventName)) {
                 $this->registry->register('taxdoo_sync_' . $eventName, true);
             } else {
