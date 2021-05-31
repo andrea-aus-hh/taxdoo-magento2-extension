@@ -279,8 +279,7 @@ class Transaction
               'description' => $item->getName(),
               'itemPrice' => $unitPrice,
               'channelItemNumber' => $itemId,
-              'discount' => $discount,
-              'sourceItemNumber' => $itemId //I don't see the difference
+              'discount' => $discount
             ];
           } else if ($type == "refund") {
             $lineItem = [
@@ -288,7 +287,6 @@ class Transaction
               'description' => $item->getName(),
               'itemPrice' => -$unitPrice,
               'channelItemNumber' => $itemId,
-              'sourceItemNumber' => $itemId,
               'discount' => $discount,
             ];
           }
