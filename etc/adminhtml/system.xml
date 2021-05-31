@@ -41,6 +41,12 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
+                <field id="debug" translate="label" sortOrder="4" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Mode</label>
+                    <comment>Enable Debug Mode for extensive logging.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
                 <field id="transactions" translate="label" sortOrder="5" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Transaction Sync</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
