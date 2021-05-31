@@ -53,7 +53,7 @@ class NotificationSandbox implements \Magento\Framework\Notification\MessageInte
    {
        $section = 'adminhtml/system_config/edit/section/tax/taxdoo';
        $url = $this->urlInterface->getUrl($section);
-       return __("The Taxdoo Sandbox mode is active. Orders and refunds are not being synchronized with your production data. Do deactivate sandbox mode modify the <a href=\"".$url."\">Taxdoo configuration</a>.");
+       return __("The Taxdoo Sandbox mode is active. Orders and refunds are not being synchronized with your production data. To deactivate sandbox mode modify the <a href=\"".$url."\">Taxdoo configuration</a>.");
    }
    public function getSeverity()
    {
