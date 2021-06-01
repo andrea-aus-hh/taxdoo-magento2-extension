@@ -192,6 +192,7 @@ class Client
         ]);
         $client->setHeaders([
             'AuthToken' => $this->apiKey,
+            'Content-Type' => 'application/json; charset=UTF-8'
         ]);
         return $client;
     }
