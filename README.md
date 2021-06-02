@@ -25,12 +25,12 @@ bin/magento setup:di:compile
 These commands will enable the Taxdoo extension, perform necessary database updates, and re-compile your Magento store.
 
 To start using the extension you'll need to do the following:
-1. Add an origin shipping address under *Stores->Configuration->Sales->Shipping Settings*. Without a complete origin address Taxdoo will reject your requests.
-1. Navigate to *Stores->Configuration->Sales->Tax*, enable the module, enter your API Token and save the configuration. You will get feedback if the token has been accepted or rejected.
-1. By default Magento won't make the "State" field mandatory at checkout for every nation. Since this is a required field for every Taxdoo order, it's a good idea to make that field mandatory at checkout, at least for EU countries. It can be easily done in the Magento configuration menu at *Stores->Configuration->General->State Option*. Otherwise, if the user decides not to include it, the sync request would be rejected by Taxdoo.
-1. (optional) Turn on sandbox mode if you don't want to risk dirtying your existing Taxdoo production data.
-1. (optional) Activate transaction sync if you want all new orders and credit memos to be automatically synced.
-1. (optional) Backfill your old orders and refunds, by clicking on the button *"Sync Transaction"* and following further instructions on the interface.
+1. **Add an origin shipping address** under *Stores->Configuration->Sales->Shipping Settings*. Without a complete origin address Taxdoo will reject your requests.
+1. Navigate to *Stores->Configuration->Sales->Tax*, **enable the module**, **enter your API Token** and **save the configuration**. You will get feedback if the token has been accepted or rejected.
+1. By default Magento won't make the **"State" field** mandatory at checkout for every nation. Since this is a required field for every Taxdoo order, it's a good idea to **make that field mandatory at checkout**, at least for EU countries. It can be easily done in the Magento configuration menu at *Stores->Configuration->General->State Option*. Otherwise, if the user decides not to include it, the sync request would be rejected by Taxdoo.
+1. (optional) Turn on **sandbox mode** if you don't want to risk dirtying your existing Taxdoo production data.
+1. (optional) **Activate transaction sync** if you want all new orders and credit memos to be automatically synced.
+1. (optional) **Backfill your old orders and refunds**, by clicking on the button *"Sync Transaction"* and following further instructions on the interface.
 
 Under *Sales->Orders* you can add the column "Synced to Taxdoo (or sandbox)" to the table: every order that you backfilled or automatically synced should contain a sync date. If not, please verify that the API token is correct and that you set a complete origin address. Please notice that the extension will only synchronise complete or closed orders.
 
