@@ -138,11 +138,6 @@ class Order extends \Taxdoo\VAT\Model\Transaction
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
             $error = json_decode($e->getMessage());
 
-            // Retry push for not found records using POST
-            if (!$forceMethod && $method == 'PUT' && $error && $error->status == 404) {
-                $this->logger->log('Attempting to create order #' . $this->request['orders'][0]['channel']['transactionNumber'], 'retry');
-                return $this->push('POST');
-            }
         }
     }
 
