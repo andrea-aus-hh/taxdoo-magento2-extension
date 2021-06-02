@@ -167,12 +167,7 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
             $error = json_decode($e->getMessage());
-
-            // Retry push for not found records using POST
-            if (!$forceMethod && $method == 'PUT' && $error && $error->status == 404) {
-                $this->logger->log('Attempting to create refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber'], 'retry');
-                return $this->push('POST');
-            }
+            $this->eventManager->dispatch('transaction_sync_failed',['request' => $this->request, 'error' => $e->getMessage()]);
         }
     }
 }

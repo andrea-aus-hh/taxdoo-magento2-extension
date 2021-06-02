@@ -19,6 +19,7 @@ namespace Taxdoo\VAT\Model;
 
 use Magento\Bundle\Model\Product\Price;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Event\ManagerInterface as EventManager;
 use Taxdoo\VAT\Helper\Data as TaxdooHelper;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
@@ -60,6 +61,11 @@ class Transaction
     protected $objectManager;
 
     /**
+     * @var \Magento\Framework\Event\ManagerInterface
+     */
+    protected $eventManager;
+
+    /**
      * @var \Taxdoo\VAT\Helper\Data
      */
     protected $helper;
@@ -76,6 +82,7 @@ class Transaction
      * @param \Magento\Directory\Model\RegionFactory $regionFactory
      * @param \Taxdoo\VAT\Model\Logger $logger
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param \Magento\Framework\Event\ManagerInterface $eventManager
      * @param TaxdooHelper $helper
      * @param TaxdooConfig $TaxdooConfig
      */
@@ -86,6 +93,7 @@ class Transaction
         \Magento\Directory\Model\RegionFactory $regionFactory,
         \Taxdoo\VAT\Model\Logger $logger,
         \Magento\Framework\ObjectManagerInterface $objectManager,
+        \Magento\Framework\Event\ManagerInterface $eventManager,
         \Magento\Sales\Api\TransactionRepositoryInterface $repository,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         TaxdooHelper $helper,
@@ -97,6 +105,7 @@ class Transaction
         $this->regionFactory = $regionFactory;
         $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG);
         $this->objectManager = $objectManager;
+        $this->eventManager = $eventManager;
         $this->repository = $repository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->helper = $helper;

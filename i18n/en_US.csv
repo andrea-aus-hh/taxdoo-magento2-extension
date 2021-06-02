@@ -35,3 +35,8 @@ To,To
 "API Token","API Token"
 "Enable Sandbox","Enable Sandbox"
 "Transaction Sync","Transaction Sync"
+"The order ' . . ' hasn't been synced to Taxdoo","The order ' . . ' hasn't been synced to Taxdoo"
+"The refund ' . . ' for the order ' . . ' hasn't been synced to Taxdoo","The refund ' . . ' for the order ' . . ' hasn't been synced to Taxdoo"
+"The transaction ' . . ' hasn't been synced to Taxdoo","The transaction ' . . ' hasn't been synced to Taxdoo"
+"Something went wrong with your last request to Taxdoo.","Something went wrong with your last request to Taxdoo."
+"'Check your API token and the request which follows here: ' . . ' Taxdoo response: ' .","'Check your API token and the request which follows here: ' . . ' Taxdoo response: ' ."

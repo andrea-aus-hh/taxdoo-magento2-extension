@@ -137,7 +137,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
             $error = json_decode($e->getMessage());
-
+            $this->eventManager->dispatch('transaction_sync_failed',['request' => $this->request, 'error' => $e->getMessage()]);
         }
     }
 

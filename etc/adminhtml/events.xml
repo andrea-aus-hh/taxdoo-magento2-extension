@@ -20,8 +20,10 @@
    <event name="controller_action_postdispatch_adminhtml_system_config_save">
         <observer name="taxdoo_salestax_config_review" instance="Taxdoo\VAT\Observer\ConfigReview"/>
     </event>
-
     <event name="taxdoo_vat_backfill_transactions">
         <observer name="taxdoo_salestax_backfill_transactions" instance="Taxdoo\VAT\Observer\BackfillTransactions"/>
+    </event>
+    <event name="transaction_sync_failed">
+        <observer name="notify_failed_sync" instance="Taxdoo\VAT\Observer\NotifyFailedSync"/>
     </event>
 </config>
