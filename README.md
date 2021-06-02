@@ -1,8 +1,14 @@
 # Magento 2 Taxdoo Plugin
 
-A Taxdoo extension for Magento 2 shops. Its features are at the moment the basic ones: backfilling old orders and refunds, automatically syncing new orders and refunds.
+A Taxdoo extension for Magento 2 shops. Its features are at the moment the basic ones: backfilling old orders and refunds, automatically syncing new orders and refunds. It has some very obvious to-dos. Among others:
 
-Since I could only test this extension on my own Magento 2 test system, I'm more than happy for every further tester. The plugin supports Taxdoo's sandbox mode, so that production data can stay safe.
+* Support for gift cards
+* Support for modifications of already posted transactions through a PUT request
+* B2B customers support
+
+Since I could only test this extension on my own Magento 2 test system, I'm more than happy for every further tester. My test system can't generate real payment data, which is needed to provide Taxdoo a Payment Date for every order and refund - the code uses the Invoice Date as a placeholder, if no real payment is found. It's not clear cut to me if this is a good practice, in the case of a purchase on invoice, in which Magento per se won't know about when the money landed in the bank account and only knows when it was invoiced. Glad to get feedback on this - as on anything else.
+
+This extension supports Taxdoo's sandbox mode, so that production data can stay safe.
 
 This code is a fork of the open source [Magento 2 Taxjar plugin](https://github.com/taxjar/taxjar-magento2-extension), adapted to work with its European epigone Taxdoo. Being a derivative product, it's released under the same license, the [Open Software License 3.0](https://opensource.org/licenses/OSL-3.0) (OSL-3.0).
 
