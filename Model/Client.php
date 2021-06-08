@@ -84,14 +84,31 @@ class Client
 
     /**
      * Perform a GET request
+     * Offering option to filter by transaction and refunds
+     * According to the Taxdoo documentation, specifying both is significantly faster, if one is after a refund
      *
      * @param string $resource
+     * @param array $transactions
+     * @param array $refunds
      * @param array $errors
      * @return array
      */
-    public function getResource($resource, $errors = [])
+    public function getResource($resource, $transactions = [], $refunds = [], $errors = [])
     {
-        $client = $this->getClient($this->_getApiUrl($resource));
+        if (is_array($transactions)) { //If transactions or refunds are not passed, it's going to be an empty array
+          $transactions = implode(',',$transactions);
+        }
+        if (is_array($refunds)) {
+          $refunds = implode(',',$refunds);
+        }
+        $urlParameters = '?primary_platform=' . TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER;
+        if (!empty($transactions)) {
+          $urlParameters .= '&primary_transaction_number=' . $transactions;
+        }
+        if (!empty($refunds)) {
+          $urlParameters .= '&primary_refund_number=' . $refunds;
+        }
+        $client = $this->getClient($this->_getApiUrl($resource) . $urlParameters);
         return $this->_getRequest($client, $errors);
     }
 
@@ -113,6 +130,9 @@ class Client
 
     /**
      * Perform a PUT request
+     * Please notice: this function is still there out of the TaxJar extension.
+     * At the moment it is not used anywhere, since it requires a Transaction[] payload
+     * and that feature is not implemented yet.
      *
      * @param string $resource
      * @param int $resourceId
@@ -120,9 +140,9 @@ class Client
      * @param array $errors
      * @return array
      */
-    public function putResource($resource, $resourceId, $data, $errors = [])
+    public function putResource($resource, $data, $errors = [])
     {
-        $resourceUrl = $this->_getApiUrl($resource);// . '/' . $resourceId;
+        $resourceUrl = $this->_getApiUrl($resource);
         $client = $this->getClient($resourceUrl, \Zend_Http_Client::PUT);
         $client->setRawData(json_encode($data), 'application/json');
         return $this->_getRequest($client, $errors);
@@ -130,15 +150,24 @@ class Client
 
     /**
      * Perform a DELETE request
+     * The DELETE request is only compatible with the /transactions/ resource
+     * This function comes off as abstract, but the ?ids= parameter gives away
+     * that it's only for deleting transactions.
      *
      * @param string $resource
      * @param int $resourceId
      * @param array $errors
      * @return array
      */
-    public function deleteResource($resource, $resourceId, $errors = [])
+    public function deleteResource($resource, $resourceIds = [], $errors = [])
     {
-        $resourceUrl = $this->_getApiUrl($resource) . '?ids=' . $resourceId;
+        if(is_array($resourceIds)) {
+          $ids = implode(',',$resourceIds);
+        } else {
+          $ids = $resourceIds;
+        }
+
+        $resourceUrl = $this->_getApiUrl($resource) . '?ids=' . $ids;
         $client = $this->getClient($resourceUrl, \Zend_Http_Client::DELETE);
         return $this->_getRequest($client, $errors);
     }
@@ -208,7 +237,6 @@ class Client
      */
     private function _getRequest($client, $errors = [])
     {
-
         try {
             $response = $client->request();
 
@@ -221,7 +249,6 @@ class Client
         } catch (LocalizedException $e) {
           throw $e;
         }
-
     }
 
     /**
@@ -244,8 +271,10 @@ class Client
             case 'refunds':
                 $apiUrl .= '/refunds';
                 break;
+            case 'transactions':
+                $apiUrl .= '/transactions';
+                break;
         }
-
         return $apiUrl;
     }
 

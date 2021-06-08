@@ -44,6 +44,7 @@ class Configuration
     const TAXDOO_TAXABLE_TAX_CODE     = '11111';
     const TAXDOO_EXEMPT_TAX_CODE      = '99999';
     const TAXDOO_MAGENTO_IDENTIFIER   = 'MAG';
+    const TAXDOO_EMAIL                = 'tax/taxdoo/email';
 
     /**
      * @var \Magento\Config\Model\ResourceModel\Config

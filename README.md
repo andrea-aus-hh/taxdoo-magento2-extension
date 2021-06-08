@@ -46,7 +46,32 @@ bin/magento setup:di:compile
 
 ## Tests
 
-I'm still in the process of adapting the original TaxJar integration tests for this Taxdoo version. Stay tuned.
+The integration tests here included, largely inherited from TaxJar, test in particular the generation of Orders/Refunds objects in many different cases, and the client. This creates some test transactions in your Taxdoo Sandbox environment and cleans them up afterwards - and requires a working Taxdoo API Token.
+
+To run our integration tests, clone the repository into your local instance of Magento 2. You'll need an active Taxdoo API token (preferably a test account) to run these tests.
+
+Backup or rename your existing `phpunit.xml` under `dev/tests/integration`. Copy the `phpunit.xml file` in the Taxdoo module under `app/code/Taxdoo/VAT/Test/Integration`:
+
+```
+cp app/code/Taxdoo/VAT/Test/Integration/phpunit.xml dev/tests/integration/phpunit.xml
+```
+Rename `install-config-mysql.php.dist` to `install-config-mysql.php` under `dev/tests/integration/etc`. Edit the settings in order to give Magento access to a MySQL database for integration tests.
+
+Copy `Test/Integration/credentials.php.dist` to `credentials.php` in the same directory. Edit the file to add your Taxdoo API token and your Taxdoo Email Address:
+
+```
+cp app/code/Taxdoo/VAT/Test/Integration/credentials.php.dist app/code/Taxdoo/VAT/Test/Integration/credentials.php
+```
+
+Finally, run the Taxdoo test suite using PHPUnit:
+
+```
+vendor/bin/phpunit -c <Magento_Home>/dev/tests/integration/phpunit.xml --testsuite “Taxdoo”
+```
+
+Notice that the configuration flag should include the full path to `phpunit.xml`.
+
+Deeper and broader tests are being written. Stay tuned.
 
 ## License
 
