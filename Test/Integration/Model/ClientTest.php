@@ -172,8 +172,6 @@ class ClientTest extends \PHPUnit\Framework\TestCase
 
     $this->transactionsToBeCleaned[] = $randomTransactionNumber;
     $postResponse = $this->taxdooClient->postResource('orders', $orderPayload);
-    var_dump($postResponse);
-
   }
 
   /**

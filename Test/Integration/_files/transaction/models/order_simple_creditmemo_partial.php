@@ -30,6 +30,8 @@ $orderData['increment_id'] = '100000004';
 $qty = 5;
 $qtyRefunded = 2;
 
+$skus = ['24-WG082-blue'];
+
 $objectManager = ObjectManager::getInstance();
 
 $billingAddress = $objectManager->create(OrderAddress::class, ['data' => $addressData]);
@@ -55,20 +57,20 @@ $orderItems = [];
 // Create the remaining simple items
 foreach($products as $product) {
     /** @var OrderItem $orderItem */
-    $orderItem = $objectManager->create(OrderItem::class);
-    $orderItem->setProductId($product->getId())
-        ->setQtyRefunded($qtyRefunded)
-        ->setQtyOrdered($qty)
-        ->setBasePrice($product->getPrice())
-        ->setPrice($product->getPrice())
-        ->setRowTotal($product->getPrice())
-        ->setProductType($product->getTypeId())
-        ->setName($product->getName())
-        ->setSku($product->getSku());
+    if (in_array($product->getSku(), $skus)) {
+      $orderItem = $objectManager->create(OrderItem::class);
+      $orderItem->setProductId($product->getId())
+          ->setQtyRefunded($qtyRefunded)
+          ->setQtyOrdered($qty)
+          ->setBasePrice($product->getPrice())
+          ->setPrice($product->getPrice())
+          ->setRowTotal($product->getPrice())
+          ->setProductType($product->getTypeId())
+          ->setName($product->getName())
+          ->setSku($product->getSku());
 
-    $orderItems[] = $orderItem;
-
-    break;
+          $orderItems[] = $orderItem;
+        }
 }
 
 /** @var Order $order */

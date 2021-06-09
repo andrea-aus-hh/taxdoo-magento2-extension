@@ -98,6 +98,5 @@ foreach($productData as $data) {
     /** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepository */
     $productRepository = $objectManager->create(\Magento\Catalog\Api\ProductRepositoryInterface::class);
     $productRepository->save($product);
-    //var_dump($product->getName());
     $products[] = $product;
 }

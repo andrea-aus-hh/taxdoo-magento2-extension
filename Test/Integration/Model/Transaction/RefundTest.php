@@ -100,7 +100,6 @@ class RefundTest extends \PHPUnit\Framework\TestCase
         $creditmemo = $order->getCreditmemosCollection()->getFirstItem();
         $result = $this->transactionRefund->build($order, $creditmemo);
         $this->order->reset();
-        #var_dump($result);
 
         $this->assertEquals(1, count($result['refunds'][0]['items']), 'Invalid number of items');
     }
