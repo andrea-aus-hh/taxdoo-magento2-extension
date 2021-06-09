@@ -125,12 +125,29 @@ class RefundTest extends \PHPUnit\Framework\TestCase
         $creditmemo = $order->getCreditmemosCollection()->getFirstItem();
 
         $result = $this->transactionRefund->build($order, $creditmemo);
+        $this->order->reset();
 
         $this->assertEquals(-5., $result['refunds'][0]['shipping'], 'Invalid shipping refunded');
     }
 
+    /**
+     * @magentoDataFixture ../../../../app/code/Taxdoo/VAT/Test/Integration/_files/transaction/refund_bundle_partial.php
+     */
+    public function testBundledProductsPartialRefund()
+    {
+       $order = $this->order->loadByIncrementId('100000001');
+       $creditmemo = $order->getCreditmemosCollection()->getFirstItem();
+       $result = $this->transactionRefund->build($order, $creditmemo);
+       $lineItems = $result['refunds'][0]['items'];
 
-
+       $this->assertEquals(2, count($lineItems), 'Number of line items is incorrect');
+       $this->assertEquals(1, $lineItems[0]['quantity'], 'Invalid quantity');
+       $this->assertEquals('Sprite Stasis Ball 65 cm', $lineItems[0]['description'], 'Invalid sku.');
+       $this->assertEquals(1, $lineItems[1]['quantity'], 'Invalid quantity');
+       $this->assertEquals('Sprite Foam Yoga Brick', $lineItems[1]['description'], 'Invalid sku.');
+       $this->assertArrayNotHasKey(2, $lineItems);
+       $this->assertArrayNotHasKey(3, $lineItems);
+    }
 
     protected function tearDown(): void
     {
