@@ -287,7 +287,7 @@ class Transaction
               'quantity' => $quantity,
               'productIdentifier' => $item->getSku(),
               'description' => $item->getName(),
-              'itemPrice' => $unitPrice,
+              'itemPrice' => $unitPrice * $quantity,
               'channelItemNumber' => $itemId,
               'discount' => $discount
             ];
@@ -295,7 +295,7 @@ class Transaction
             $lineItem = [
               'quantity' => $quantity,
               'description' => $item->getName(),
-              'itemPrice' => -$unitPrice,
+              'itemPrice' => -$unitPrice * $quantity,
               'channelItemNumber' => $itemId,
               'discount' => $discount,
             ];

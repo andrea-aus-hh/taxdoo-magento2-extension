@@ -67,7 +67,7 @@ class OrderTest extends \PHPUnit\Framework\TestCase
         $order = $this->order->loadByIncrementId('100000002');
         $result = $this->transactionOrder->build($order);
 
-        $this->assertEquals(27.0, $result['orders'][0]['items'][0]['itemPrice'], 'Invalid price');
+        $this->assertEquals(5*27.0, $result['orders'][0]['items'][0]['itemPrice'], 'Invalid price');
     }
 
     /**
