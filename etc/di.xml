@@ -25,7 +25,4 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\Framework\RequireJs\Config\File\Collector\Aggregated">
-        <plugin name="manage_address_validation_mixins" type="Taxdoo\VAT\Plugin\RequireJs\AfterFiles" sortOrder="100"/>
-    </type>
 </config>
