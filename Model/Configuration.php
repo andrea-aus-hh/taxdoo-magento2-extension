@@ -32,14 +32,11 @@ class Configuration
     const TAXDOO_ENABLED              = 'tax/taxdoo/enabled';
     const TAXDOO_LAST_UPDATE          = 'tax/taxdoo/last_update';
     const TAXDOO_SANDBOX_ENABLED      = 'tax/taxdoo/sandbox';
-    const TAXDOO_STATES               = 'tax/taxdoo/states';
     const TAXDOO_TRANSACTION_SYNC     = 'tax/taxdoo/transactions';
     const TAXDOO_DEBUG                = 'tax/taxdoo/debug';
     const TAXDOO_DEFAULT_LOG          = 'default.log';
-    const TAXDOO_CALCULATIONS_LOG     = 'calculations.log';
     const TAXDOO_TRANSACTIONS_LOG     = 'transactions.log';
     const TAXDOO_CLIENT_LOG           = 'client.log';
-    const TAXDOO_ADDRVALIDATION_LOG   = 'address_validation.log';
     const TAXDOO_CUSTOMER_LOG         = 'customers.log';
     const TAXDOO_TAXABLE_TAX_CODE     = '11111';
     const TAXDOO_EXEMPT_TAX_CODE      = '99999';
