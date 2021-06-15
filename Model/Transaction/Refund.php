@@ -117,7 +117,7 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $refundsArray = [];
         $refundsArray['refunds'][] = $refund;
 
-        $this->request = $refundsArray; //TEMPORANEO, GUARDA LA ROBA COMMENTATA PRIMA
+        $this->request = $refundsArray;
 
         return $this->request;
     }
