@@ -44,6 +44,7 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
      * @param \Magento\Framework\Data\FormFactory $formFactory
      * @param array $data
      */
+     // @codingStandardsIgnoreStart
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -52,6 +53,7 @@ class Form extends \Magento\Backend\Block\Widget\Form\Generic
     ) {
         parent::__construct($context, $registry, $formFactory, $data);
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @return void

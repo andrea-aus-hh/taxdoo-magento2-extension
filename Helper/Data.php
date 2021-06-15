@@ -69,6 +69,8 @@ class Data extends AbstractHelper
      * Return an obfuscated version of an email address.
      * Many thanks to msturdy from stackoverflow for this function : https://stackoverflow.com/a/20545505
      */
+     // I'm putting an ignore here, because one shouldn't use a static functions.
+     // @codingStandardsIgnoreStart
 
     public static function obfuscateEmail($email)
     {
@@ -84,6 +86,7 @@ class Data extends AbstractHelper
 
         return substr($name, 0, $len) . str_repeat('*', $asterisks) . "@" . end($em);
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * Sort a multidimensional array by key
