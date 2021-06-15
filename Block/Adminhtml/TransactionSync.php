@@ -77,7 +77,6 @@ class TransactionSync extends PopupField
         return parent::_getElementHtml($element) . $this->_toHtml();
     }
 
-
     /**
      * Transaction sync enabled check
      *
@@ -93,5 +92,4 @@ class TransactionSync extends PopupField
 
         return $this->helper->isTransactionSyncEnabled();
     }
-
 }

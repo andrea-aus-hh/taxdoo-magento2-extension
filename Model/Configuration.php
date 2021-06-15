@@ -85,7 +85,7 @@ class Configuration
     {
         return preg_replace('/\s+/', '', $this->scopeConfig->getValue(
             $this->isSandboxEnabled() ? self::TAXDOO_SANDBOX_APIKEY : self::TAXDOO_APIKEY,
-            is_null($storeId) ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
+            $storeId === null ? ScopeConfigInterface::SCOPE_TYPE_DEFAULT : ScopeInterface::SCOPE_STORE,
             $storeId
         ));
     }
@@ -95,7 +95,8 @@ class Configuration
      *
      * @return bool
      */
-    public function isSandboxEnabled() {
+    public function isSandboxEnabled()
+    {
         return (bool) $this->scopeConfig->getValue(self::TAXDOO_SANDBOX_ENABLED);
     }
 

@@ -19,35 +19,34 @@ namespace Taxdoo\VAT\Model;
 
 class NotificationAPIToken implements \Magento\Framework\Notification\MessageInterface
 {
-  public function __construct(
-      \Taxdoo\VAT\Model\ClientFactory $clientFactory
-  ) {
-      $this->clientFactory = $clientFactory;
+    public function __construct(
+        \Taxdoo\VAT\Model\ClientFactory $clientFactory
+    ) {
+        $this->clientFactory = $clientFactory;
 
-      $this->client = $this->clientFactory->create();
-      $this->client->showResponseErrors(true);
-  }
+        $this->client = $this->clientFactory->create();
+        $this->client->showResponseErrors(true);
+    }
 
-   public function getIdentity()
-   {
-       return 'taxdoo-api-token-refused';
-   }
-   public function isDisplayed()
-   {
-       $response = $this->client->checkApiKey();
-       if ($response) {
-         return false;
-       } else {
-         return true;
-       }
-   }
-   public function getText()
-   {
-       return __("Your API Token wasn't accepted by Taxdoo. Transactions and returns won't be synchronized.");
-   }
-   public function getSeverity()
-   {
-
-       return self::SEVERITY_MAJOR;
-   }
+    public function getIdentity()
+    {
+        return 'taxdoo-api-token-refused';
+    }
+    public function isDisplayed()
+    {
+        $response = $this->client->checkApiKey();
+        if ($response) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    public function getText()
+    {
+        return __("Your API Token wasn't accepted by Taxdoo. Transactions and returns won't be synchronized.");
+    }
+    public function getSeverity()
+    {
+        return self::SEVERITY_MAJOR;
+    }
 }

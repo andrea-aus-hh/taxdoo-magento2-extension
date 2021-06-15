@@ -67,30 +67,28 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
 
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
         if (!empty($transactions)) { //If there is a transaction (payment), we use it. Otherwise we use the Invoice date
-          $currentTransaction = $transactions->getFirstItem();
-          $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
+            $currentTransaction = $transactions->getFirstItem();
+            $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
         } else {
-          $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+            $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
         }
 
         $refund = [
-          'channel' => array(
+          'channel' => [
             "identifier" => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
             "transactionNumber" => $order->getIncrementId(),
             "refundNumber" => $creditmemo->getIncrementId()
-          ),
-          'source' => array(
+          ],
+          'source' => [
             "identifier" => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
             "transactionNumber" => $order->getIncrementId(),
             "refundNumber" => $creditmemo->getIncrementId()
-          ),
+          ],
           'paymentDate' => $transactionDate->format(\DateTime::RFC3339),
           'transactionCurrency' => $currencyCode,
           'items' => $this->buildLineItems($order, $creditmemo->getAllItems(), 'refund'),
           'shipping' => -$shipping
         ];
-
-
 
         if (isset($this->refund['items'])) {
             $adjustmentFee = $creditmemo->getAdjustmentNegative();
@@ -130,17 +128,22 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
      * @param string|null $forceMethod
      * @return void
      */
-    public function push($forceMethod = null) {
+    public function push($forceMethod = null)
+    {
         $refundUpdatedAt = $this->originalRefund->getUpdatedAt();
         $refundSyncedAt = $this->originalRefund->getTdSalestaxSyncDate();
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
+        $refundNumber = $this->request['refunds'][0]['channel']['refundNumber'];
+        $orderNumber = $this->request['refunds'][0]['channel']['transactionNumber'];
+
         if (!$this->isSynced($refundSyncedAt)) {
-            $method = 'POST'; // This is the ghost of the feature that allowed to call a PUT method to modify a transaction.
+            $method = 'POST'; // This is the ghost of the feature that allowed
+                              // to call a PUT method to modify a transaction.
                               // That feature is not implemented yet
         } else {
-            $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber']
-                                        . ' for order #' . $this->request['refunds'][0]['source']['transactionNumber']
+            $this->logger->log('Refund #' . $refundNumber
+                                        . ' for order #' . $orderNumber
                                         . ' has already been synced', 'skip');
             return;
         }
@@ -154,13 +157,13 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         }
 
         try {
-            $this->logger->log('Pushing refund / credit memo #' . $this->request['refunds'][0]['channel']['transactionNumber']
-                                    . ' for order #' . $this->request['refunds'][0]['source']['transactionNumber']
+            $this->logger->log('Pushing refund / credit memo #' . $refundNumber
+                                    . ' for order #' . $orderNumber
                                     . ': ' . json_encode($this->request), $method);
 
             if ($method == 'POST') {
                 $response = $this->client->postResource('refunds', $this->request);
-                $this->logger->log('Refund #' . $this->request['refunds'][0]['channel']['transactionNumber'] . ' created: ' . json_encode($response), 'api');
+                $this->logger->log('Refund #' . $refundNumber . ' created: ' . json_encode($response), 'api');
                 $this->originalRefund->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'));
                 $this->originalRefund->getResource()->saveAttribute($this->originalRefund, 'td_salestax_sync_date');
             }
@@ -168,7 +171,10 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
             $error = json_decode($e->getMessage());
-            $this->eventManager->dispatch('transaction_sync_failed',['request' => $this->request, 'error' => $e->getMessage()]);
+            $this->eventManager->dispatch(
+                'transaction_sync_failed',
+                ['request' => $this->request, 'error' => $e->getMessage()]
+            );
         }
     }
 }

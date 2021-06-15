@@ -65,6 +65,26 @@ class Data extends AbstractHelper
         parent::__construct($context);
     }
 
+    /*
+     * Return an obfuscated version of an email address.
+     * Many thanks to msturdy from stackoverflow for this function : https://stackoverflow.com/a/20545505
+     */
+
+    public static function obfuscateEmail($email)
+    {
+        $em   = explode("@", $email);
+        $name = implode('@', array_slice($em, 0, count($em)-1));
+        if (strlen($name) >= 3) {
+            $len = 3;
+            $asterisks = strlen($name) - 3;
+        } else {
+            $len = 0;
+            $asterisks = strlen($name);
+        }
+
+        return substr($name, 0, $len) . str_repeat('*', $asterisks) . "@" . end($em);
+    }
+
     /**
      * Sort a multidimensional array by key
      *
@@ -132,7 +152,10 @@ class Data extends AbstractHelper
         $disabledFunctions = explode(',', ini_get('disable_functions'));
         $os = !in_array('php_uname', $disabledFunctions) ? php_uname('a') : '';
         $php = 'PHP ' . PHP_VERSION;
+        // @codingStandardsIgnoreStart
+        // Magento deprecates curl_version - how shall we replace it?
         $curl = !in_array('curl_version', $disabledFunctions) ? 'cURL ' . curl_version()['version'] : '';
+        // @codingStandardsIgnoreEnd
         $openSSL = defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : '';
         $magento = 'Magento ' . $this->productMetadata->getEdition() . ' ' . $this->productMetadata->getVersion();
         $precision = 'Precision ' . PriceCurrencyInterface::DEFAULT_PRECISION;

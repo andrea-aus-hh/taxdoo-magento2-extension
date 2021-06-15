@@ -135,12 +135,17 @@ class ConfigReview implements ObserverInterface
 
     private function _checkApiKey()
     {
-      $response = $this->client->checkApiKey();
-      if (!$response) {
-        $this->messageManager->addComplexErrorMessage('tdAccountResponse',['accepted' => False]);
-
-      } else {
-        $this->messageManager->addComplexSuccessMessage('tdAccountResponse',['accepted' => True, 'response' => $response]);
-      }
+        $response = $this->client->checkApiKey();
+        if (!$response) {
+            $this->messageManager->addComplexErrorMessage(
+                'tdAccountResponse',
+                ['accepted' => false]
+            );
+        } else {
+            $this->messageManager->addComplexSuccessMessage(
+                'tdAccountResponse',
+                ['accepted' => true, 'response' => $response]
+            );
+        }
     }
 }

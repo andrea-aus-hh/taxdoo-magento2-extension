@@ -17,14 +17,14 @@
 
  use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
-$randomTransactionNumber = 'TD-Integration-Test-Order-' . rand(0,100000);
+$randomTransactionNumber = 'TD-Integration-Test-Order-' . rand(0, 100000);
 $now = new \DateTime(date('Y-m-d H:i:s'));
 return [
   'type' => 'Sale',
-  'channel' => array(
+  'channel' => [
     'identifier' => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
     'transactionNumber' => $randomTransactionNumber
-  ),
+  ],
   'paymentDate' => $now->format(\DateTime::RFC3339),
   'sentDate' => $now->format(\DateTime::RFC3339),
   'deliveryAddress' => [
@@ -59,7 +59,7 @@ return [
   'itemPrice' => 27.0,
   'channelItemNumber' => "001",
   'discount' => 0.0
-]],
+  ]],
   'paymentChannel' => "Paypal",
   'paymentNumber' => "TD-Integration-Test-Payment-0000001",
   'invoiceDate' => $now->format(\DateTime::RFC3339),

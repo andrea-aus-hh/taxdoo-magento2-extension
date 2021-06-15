@@ -17,14 +17,14 @@
 
  use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
-$randomRefundNumber = 'TD-Integration-Test-Refund-' . rand(0,100000);
+$randomRefundNumber = 'TD-Integration-Test-Refund-' . rand(0, 100000);
 
 return [
-  'channel' => array(
+  'channel' => [
     'identifier' => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
     'transactionNumber' => $randomTransactionNumber,
     'refundNumber' => $randomRefundNumber
-  ),
+  ],
   'paymentDate' => $now->format(\DateTime::RFC3339),
   'shipping' => -5.0,
   'transactionCurrency' => 'EUR',

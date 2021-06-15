@@ -96,17 +96,17 @@ class Client
     public function getResource($resource, $transactions = [], $refunds = [], $errors = [])
     {
         if (is_array($transactions)) { //If transactions or refunds are not passed, it's going to be an empty array
-          $transactions = implode(',',$transactions);
+            $transactions = implode(',', $transactions);
         }
         if (is_array($refunds)) {
-          $refunds = implode(',',$refunds);
+            $refunds = implode(',', $refunds);
         }
         $urlParameters = '?primary_platform=' . TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER;
         if (!empty($transactions)) {
-          $urlParameters .= '&primary_transaction_number=' . $transactions;
+            $urlParameters .= '&primary_transaction_number=' . $transactions;
         }
         if (!empty($refunds)) {
-          $urlParameters .= '&primary_refund_number=' . $refunds;
+            $urlParameters .= '&primary_refund_number=' . $refunds;
         }
         $client = $this->getClient($this->_getApiUrl($resource) . $urlParameters);
         return $this->_getRequest($client, $errors);
@@ -161,10 +161,10 @@ class Client
      */
     public function deleteResource($resource, $resourceIds = [], $errors = [])
     {
-        if(is_array($resourceIds)) {
-          $ids = implode(',',$resourceIds);
+        if (is_array($resourceIds)) {
+            $ids = implode(',', $resourceIds);
         } else {
-          $ids = $resourceIds;
+            $ids = $resourceIds;
         }
 
         $resourceUrl = $this->_getApiUrl($resource) . '?ids=' . $ids;
@@ -185,12 +185,12 @@ class Client
 
     public function checkApiKey()
     {
-      try {
-        $response = $this->getResource('account');
-        return $response;
-      } catch (LocalizedException $e) {
-        return False;
-      }
+        try {
+            $response = $this->getResource('account');
+            return $response;
+        } catch (LocalizedException $e) {
+            return false;
+        }
     }
 
     /**
@@ -247,7 +247,7 @@ class Client
                 $this->_handleError($errors, $response);
             }
         } catch (LocalizedException $e) {
-          throw $e;
+            throw $e;
         }
     }
 
@@ -263,8 +263,8 @@ class Client
 
         switch ($resource) {
             case 'account':
-              $apiUrl .= '/account';
-              break;
+                $apiUrl .= '/account';
+                break;
             case 'orders':
                 $apiUrl .= '/orders';
                 break;
@@ -277,7 +277,6 @@ class Client
         }
         return $apiUrl;
     }
-
 
     /**
      * Handle API errors and throw exception

@@ -163,10 +163,12 @@ class Transaction
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $order->getStoreId()
         );
-        $fromStreet = $this->scopeConfig->getValue('shipping/origin/street_line1',
+        $fromStreet = $this->scopeConfig->getValue(
+            'shipping/origin/street_line1',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $order->getStoreId()
-        ) . ' ' . $this->scopeConfig->getValue('shipping/origin/street_line2',
+        ) . ' ' . $this->scopeConfig->getValue(
+            'shipping/origin/street_line2',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $order->getStoreId()
         );
@@ -190,16 +192,16 @@ class Transaction
         \Magento\Sales\Model\Order $order,
         $type = "shipping"
     ) {
-        if ($order->getIsVirtual() or $type == "billing") {
+        if ($order->getIsVirtual() || $type == "billing") {
             $address = $order->getBillingAddress();
         } else {
             $address = $order->getShippingAddress();
         }
 
         if ($address->getMiddlename() == "") {
-          $fullName = $address->getFirstname() . ' ' . $address->getLastname();
+            $fullName = $address->getFirstname() . ' ' . $address->getLastname();
         } else {
-          $fullName = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
+            $fullName = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
         }
 
         $toAddress = [
@@ -222,7 +224,8 @@ class Transaction
      * @param string $type
      * @return array
      */
-    protected function buildLineItems($order, $items, $type = 'order') {
+    protected function buildLineItems($order, $items, $type = 'order')
+    {
         $lineItems = [];
         $parentDiscounts = $this->getParentAmounts('discount', $items, $type);
         $parentTaxes = $this->getParentAmounts('tax', $items, $type);
@@ -230,7 +233,7 @@ class Transaction
         foreach ($items as $item) {
             $itemType = $item->getProductType();
 
-            if (is_null($itemType) && method_exists($item, 'getOrderItem')) {
+            if ($itemType === null && method_exists($item, 'getOrderItem')) {
                 $creditMemoItem = $item;
                 $item = $item->getOrderItem();
                 $itemType = $item->getProductType();
@@ -282,31 +285,30 @@ class Transaction
                 $tax = $parentTaxes[$itemId] ?: $tax;
             }
 
-            if ($type == "order"){
-              $lineItem = [
-              'quantity' => $quantity,
-              'productIdentifier' => $item->getSku(),
-              'description' => $item->getName(),
-              'itemPrice' => $unitPrice * $quantity,
-              'channelItemNumber' => $itemId,
-              'discount' => $discount
-            ];
-          } else if ($type == "refund") {
-            $lineItem = [
-              'quantity' => $quantity,
-              'description' => $item->getName(),
-              'itemPrice' => -$unitPrice * $quantity,
-              'channelItemNumber' => $itemId,
-              'discount' => $discount,
-            ];
-          }
+            if ($type == "order") {
+                $lineItem = [
+                'quantity' => $quantity,
+                'productIdentifier' => $item->getSku(),
+                'description' => $item->getName(),
+                'itemPrice' => $unitPrice * $quantity,
+                'channelItemNumber' => $itemId,
+                'discount' => $discount
+                ];
+            } elseif ($type == "refund") {
+                $lineItem = [
+                'quantity' => $quantity,
+                'description' => $item->getName(),
+                'itemPrice' => -$unitPrice * $quantity,
+                'channelItemNumber' => $itemId,
+                'discount' => $discount,
+                ];
+            }
 
             $lineItems[] = $lineItem;
         }
 
         return $lineItems;
     }
-
 
     /**
      * Get parent amounts (discounts, tax, etc) for configurable / bundle products
@@ -316,7 +318,8 @@ class Transaction
      * @param string $type
      * @return array
      */
-    protected function getParentAmounts($attr, $items, $type = 'order') {
+    protected function getParentAmounts($attr, $items, $type = 'order')
+    {
         $parentAmounts = [];
 
         foreach ($items as $item) {
@@ -333,10 +336,14 @@ class Transaction
             if (isset($parentItemId)) {
                 switch ($attr) {
                     case 'discount':
-                        $amount = (float) (($type == 'order') ? $item->getDiscountAmount() : $item->getDiscountRefunded());
+                        $amount = (float) (($type == 'order') ?
+                                            $item->getDiscountAmount() :
+                                            $item->getDiscountRefunded());
                         break;
                     case 'tax':
-                        $amount = (float) (($type == 'order') ? $item->getTaxAmount() : $item->getTaxRefunded());
+                        $amount = (float) (($type == 'order') ?
+                                            $item->getTaxAmount() :
+                                            $item->getTaxRefunded());
                         break;
                 }
 
@@ -350,7 +357,6 @@ class Transaction
 
         return $parentAmounts;
     }
-
 
     /**
      * @param int $id

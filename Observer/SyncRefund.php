@@ -85,7 +85,7 @@ class SyncRefund implements ObserverInterface
         $eventName = $observer->getEvent()->getName();
         $orderTransaction = $this->orderFactory->create();
 
-        if ($orderTransaction->isSyncable($order,false)) { //We're not forcing the sync
+        if ($orderTransaction->isSyncable($order, false)) { //We're not forcing the sync
             if (!$this->registry->registry('taxdoo_sync_' . $eventName)) {
                 $this->registry->register('taxdoo_sync_' . $eventName, true);
             } else {
@@ -96,7 +96,7 @@ class SyncRefund implements ObserverInterface
                 $refundTransaction = $this->refundFactory->create();
                 $refundTransaction->build($order, $creditmemo);
                 $refundTransaction->push();
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $this->messageManager->addErrorMessage($e->getMessage());
             }
         }

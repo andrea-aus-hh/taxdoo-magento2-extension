@@ -21,6 +21,7 @@ namespace Taxdoo\VAT\Model;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Exception\LocalizedException;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
+use \Magento\Framework\Filesystem\DriverInterface;
 
 class Logger
 {
@@ -123,7 +124,11 @@ class Logger
      */
     public function getPath()
     {
-        return $this->directoryList->getPath(DirectoryList::LOG) . DIRECTORY_SEPARATOR . 'taxdoo' . DIRECTORY_SEPARATOR . $this->filename;
+        return ($this->directoryList->getPath(DirectoryList::LOG)
+                . DIRECTORY_SEPARATOR
+                . 'taxdoo'
+                . DIRECTORY_SEPARATOR
+                . $this->filename);
     }
 
     /**
@@ -139,9 +144,8 @@ class Logger
         if ($this->scopeConfig->getValue(
             TaxdooConfig::TAXDOO_DEBUG,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $this->storeManager->getStore()->getId())
-            ||
-            $this->isForced
+            $this->storeManager->getStore()->getId()
+        ) || $this->isForced
         ) {
             try {
                 if (!empty($label)) {
@@ -155,9 +159,9 @@ class Logger
                 $timestamp = date('d M Y H:i:s', time());
                 $message = sprintf('%s%s - %s%s', PHP_EOL, $timestamp, $label, $message);
 
-                if (!is_dir(dirname($this->getPath()))) {
+                if (!DriverInterface::isDirectory(DriverInterface::getParentDirectory($this->getPath()))) {
                     // dir doesn't exist, make it
-                    mkdir(dirname($this->getPath()));
+                    DriverInterface::createDirectory(DriverInterface::getParentDirectory($this->getPath()));
                 }
 
                 $this->driverFile->filePutContents($this->getPath(), $message, FILE_APPEND);

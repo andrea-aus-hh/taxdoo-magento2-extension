@@ -55,11 +55,11 @@
  $orderItems = [];
 
  // Create the remaining simple items
- foreach($products as $product) {
+ foreach ($products as $product) {
      /** @var OrderItem $orderItem */
      if (in_array($product->getSku(), $skus)) {
-       $orderItem = $objectManager->create(OrderItem::class);
-       $orderItem->setProductId($product->getId())
+         $orderItem = $objectManager->create(OrderItem::class);
+         $orderItem->setProductId($product->getId())
          ->setQtyRefunded($qtyRefunded)
          ->setQtyOrdered($qty)
          ->setBasePrice($product->getPrice())
@@ -68,8 +68,8 @@
          ->setProductType($product->getTypeId())
          ->setName($product->getName())
          ->setSku($product->getSku());
-      $orderItems[] = $orderItem;
-    }
+         $orderItems[] = $orderItem;
+     }
  }
 
 
@@ -93,7 +93,7 @@
      ->setStoreId($objectManager->get(StoreManagerInterface::class)->getStore()->getId())
      ->setPayment($payment);
 
- foreach($orderItems as $orderItem){
+ foreach ($orderItems as $orderItem) {
      $order->addItem($orderItem);
  }
 

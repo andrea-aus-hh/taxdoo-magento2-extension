@@ -60,10 +60,10 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
 
         if (!empty($transactions)) { //If there is a transaction (payment), we use it. Otherwise we use the Invoice date
-          $currentTransaction = $transactions->getFirstItem();
-          $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
+            $currentTransaction = $transactions->getFirstItem();
+            $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
         } else {
-          $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+            $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
         }
 
         $payment = $order->getPayment();
@@ -72,13 +72,12 @@ class Order extends \Taxdoo\VAT\Model\Transaction
 
         $this->originalOrder = $order;
 
-
         $newOrder = [
           'type' => 'Sale',
-          'channel' => array(
+          'channel' => [
             'identifier' => TaxdooConfig::TAXDOO_MAGENTO_IDENTIFIER,
             'transactionNumber' => $order->getIncrementId()
-          ),
+          ],
           'paymentDate' => $transactionDate->format(\DateTime::RFC3339),
           'sentDate' => $currentShipmentCreatedAt->format(\DateTime::RFC3339),
           'deliveryAddress' => $this->buildToAddress($order),
@@ -106,16 +105,20 @@ class Order extends \Taxdoo\VAT\Model\Transaction
      * @param string|null $forceMethod
      * @return void
      */
-    public function push($forceMethod = null) {
+    public function push($forceMethod = null)
+    {
         $orderUpdatedAt = $this->originalOrder->getUpdatedAt();
         $orderSyncedAt = $this->originalOrder->getTdSalestaxSyncDate();
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
+        $orderNumber = $this->request['orders'][0]['channel']['transactionNumber'];
+
         if (!$this->isSynced($orderSyncedAt)) {
-            $method = 'POST'; // This is the ghost of the feature that allowed to call a PUT method to modify a transaction.
+            $method = 'POST'; // This is the ghost of the feature
+                              // that allowed to call a PUT method to modify a transaction.
                               // That feature is not implemented yet
         } else {
-                $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' has already been synced', 'skip');
+                $this->logger->log('Order #' . $orderNumber . ' has already been synced', 'skip');
                 return;
         }
 
@@ -128,17 +131,20 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         }
 
         try {
-            $this->logger->log('Pushing order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ': ' . json_encode($this->request), $method);
+            $this->logger->log('Pushing order #' . $orderNumber . ': ' . json_encode($this->request), $method);
 
             if ($method == 'POST') {
                 $response = $this->client->postResource('orders', $this->request);
-                $this->logger->log('Order #' . $this->request['orders'][0]['channel']['transactionNumber'] . ' created in Taxdoo: ' . json_encode($response), 'api');
+                $this->logger->log('Order #' . $orderNumber . ' created in Taxdoo: ' . json_encode($response), 'api');
                 $this->originalOrder->setTdSalestaxSyncDate(gmdate('Y-m-d H:i:s'))->save();
             }
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
             $error = json_decode($e->getMessage());
-            $this->eventManager->dispatch('transaction_sync_failed',['request' => $this->request, 'error' => $e->getMessage()]);
+            $this->eventManager->dispatch(
+                'transaction_sync_failed',
+                ['request' => $this->request, 'error' => $e->getMessage()]
+            );
         }
     }
 

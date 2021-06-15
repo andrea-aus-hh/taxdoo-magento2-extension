@@ -22,42 +22,45 @@ use \Magento\Framework\UrlInterface;
 
 class NotificationSandbox implements \Magento\Framework\Notification\MessageInterface
 {
-  /**
-   * @var TaxdooConfig
-   */
-  protected $taxdooConfig;
+    /**
+     * @var TaxdooConfig
+     */
+    protected $taxdooConfig;
 
-  /**
-   * @var \Magento\Framework\UrlInterface
-   */
-  protected $urlInterface;
+    /**
+     * @var \Magento\Framework\UrlInterface
+     */
+    protected $urlInterface;
 
-  public function __construct(
-    TaxdooConfig $taxdooConfig,
-    \Magento\Framework\UrlInterface $urlInterface
-  ) {
-    $this->taxdooConfig = $taxdooConfig;
-    $this->urlInterface = $urlInterface;
-  }
+    public function __construct(
+        TaxdooConfig $taxdooConfig,
+        \Magento\Framework\UrlInterface $urlInterface
+    ) {
+        $this->taxdooConfig = $taxdooConfig;
+        $this->urlInterface = $urlInterface;
+    }
 
-   public function getIdentity()
-   {
-       return 'taxdoo-sandbox-active';
-   }
-   public function isDisplayed()
-   {
-     return $this->taxdooConfig->isSandboxEnabled();
-   }
+    public function getIdentity()
+    {
+        return 'taxdoo-sandbox-active';
+    }
 
-   public function getText()
-   {
-       $section = 'adminhtml/system_config/edit/section/tax/taxdoo';
-       $url = $this->urlInterface->getUrl($section);
-       return __("The Taxdoo Sandbox mode is active. Orders and refunds are not being synchronized with your production data. To deactivate sandbox mode modify the <a href=\"".$url."\">Taxdoo configuration</a>.");
-   }
-   public function getSeverity()
-   {
+    public function isDisplayed()
+    {
+        return $this->taxdooConfig->isSandboxEnabled();
+    }
 
-       return self::SEVERITY_NOTICE;
-   }
+    public function getText()
+    {
+        $section = 'adminhtml/system_config/edit/section/tax/taxdoo';
+        $url = $this->urlInterface->getUrl($section);
+        // @codingStandardsIgnoreStart
+        return __("The Taxdoo Sandbox mode is active. Orders and refunds are not being synchronized with your production data. To deactivate sandbox mode modify the <a href=\"".$url."\">Taxdoo configuration</a>.");
+        // @codingStandardsIgnoreEnd
+    }
+
+    public function getSeverity()
+    {
+        return self::SEVERITY_NOTICE;
+    }
 }

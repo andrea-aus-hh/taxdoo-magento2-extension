@@ -25,7 +25,6 @@ class NotifyFailedSync implements ObserverInterface
 {
     protected $notifierPool;
 
-
     public function __construct(
         \Magento\Framework\Notification\NotifierInterface $notifierPool
     ) {

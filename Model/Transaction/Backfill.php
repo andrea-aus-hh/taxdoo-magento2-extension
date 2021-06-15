@@ -149,7 +149,9 @@ class Backfill
         $this->apiKey = $this->taxdooConfig->getApiKey();
 
         if (!$this->apiKey) {
+            // @codingStandardsIgnoreStart
             throw new LocalizedException(__('Could not sync transactions with Taxdoo. Please make sure you have an API key.'));
+            // @codingStandardsIgnoreEnd
         }
 
         $statesToMatch = ['complete', 'closed'];
@@ -184,10 +186,14 @@ class Backfill
             throw new LocalizedException(__("To date can't be earlier than from date."));
         }
 
-        $this->logger->log('Finding ' . implode(', ', $statesToMatch) . ' transactions from ' . $fromDate->format('m/d/Y') . ' - ' . $toDate->format('m/d/Y'));
+        $this->logger->log('Finding ' . implode(', ', $statesToMatch)
+                           . ' transactions from '
+                           . $fromDate->format('m/d/Y')
+                           . ' - '
+                           . $toDate->format('m/d/Y'));
 
         // If the store id is empty but the website id is defined, load stores that match the website id
-        if (is_null($storeId) && !is_null($websiteId)) {
+        if ($storeId === null && !($websiteId === null)) {
             $storeId = [];
             foreach ($this->storeManager->getStores() as $store) {
                 if ($store->getWebsiteId() == $websiteId) {
@@ -197,7 +203,7 @@ class Backfill
         }
 
         // If the store id is defined, build a filter based on it
-        if (!is_null($storeId) && !empty($storeId)) {
+        if (!($storeId === null) && !empty($storeId)) {
             $storeFilter = $this->filterBuilder->setField('store_id')
                 ->setConditionType(is_array($storeId) ? 'in' : 'eq')
                 ->setValue($storeId)
@@ -252,13 +258,17 @@ class Backfill
         $this->logger->log(count($orders) . ' transaction(s) found');
 
         // This process can take awhile
+        // @codingStandardsIgnoreStart
+        // Magento deprecates this function - how shall we replace it?
         set_time_limit(0);
+        // @codingStandardsIgnoreEnd
         ignore_user_abort(true);
 
         foreach ($orders as $order) {
             $orderTransaction = $this->orderFactory->create();
 
-            if ($orderTransaction->isSyncable($order,true)) { //The "true" forces the syncing, even if transaction sync isn't active
+            if ($orderTransaction->isSyncable($order, true)) { // "true" forces the syncing,
+                                                               // even if transaction sync isn't active
                 $orderTransaction->build($order);
                 $orderTransaction->push();
 
