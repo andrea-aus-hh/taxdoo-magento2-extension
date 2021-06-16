@@ -21,7 +21,7 @@ namespace Taxdoo\VAT\Model;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Exception\LocalizedException;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
-use \Magento\Framework\Filesystem\DriverInterface;
+use Magento\Framework\Filesystem\Driver;
 
 class Logger
 {
@@ -106,14 +106,26 @@ class Logger
     }
 
     /**
-     * Enables or disables the logger
+     * Enables the logger
      *
      * @param boolean $isForced
      * @return Logger
      */
-    public function force($isForced = true)
+    public function force()
     {
-        $this->isForced = $isForced;
+        $this->isForced = true;
+        return $this;
+    }
+
+    /**
+     * Enables the logger
+     *
+     * @param boolean $isForced
+     * @return Logger
+     */
+    public function unForce()
+    {
+        $this->isForced = false;
         return $this;
     }
 
@@ -138,6 +150,8 @@ class Logger
      * @param string $label
      * @throws LocalizedException
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function log($message, $label = '')
     {
@@ -159,9 +173,9 @@ class Logger
                 $timestamp = date('d M Y H:i:s', time());
                 $message = sprintf('%s%s - %s%s', PHP_EOL, $timestamp, $label, $message);
 
-                if (!DriverInterface::isDirectory(DriverInterface::getParentDirectory($this->getPath()))) {
+                if (!$this->driverFile->isDirectory($this->driverFile->getParentDirectory($this->getPath()))) {
                     // dir doesn't exist, make it
-                    DriverInterface::createDirectory(DriverInterface::getParentDirectory($this->getPath()));
+                    $this->driverFile->createDirectory($this->driverFile->getParentDirectory($this->getPath()));
                 }
 
                 $this->driverFile->filePutContents($this->getPath(), $message, FILE_APPEND);

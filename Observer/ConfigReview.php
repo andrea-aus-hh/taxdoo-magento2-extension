@@ -141,11 +141,11 @@ class ConfigReview implements ObserverInterface
                 'tdAccountResponse',
                 ['accepted' => false]
             );
-        } else {
-            $this->messageManager->addComplexSuccessMessage(
-                'tdAccountResponse',
-                ['accepted' => true, 'response' => $response]
-            );
+            return;
         }
+        $this->messageManager->addComplexSuccessMessage(
+            'tdAccountResponse',
+            ['accepted' => true, 'response' => $response]
+        );
     }
 }

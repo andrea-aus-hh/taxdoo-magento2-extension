@@ -20,6 +20,8 @@ namespace Taxdoo\VAT\Model\Transaction;
 
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
+use \DateTime;
+
 class Order extends \Taxdoo\VAT\Model\Transaction
 {
     /**
@@ -33,6 +35,11 @@ class Order extends \Taxdoo\VAT\Model\Transaction
     protected $request;
 
     /**
+     * @var boolean
+     */
+    protected $syncIsForced = false;
+
+    /**
      * Build an order transaction
      *
      * @param \Magento\Sales\Model\Order $order
@@ -41,7 +48,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
     public function build(
         \Magento\Sales\Model\Order $order
     ) {
-        $createdAt = new \DateTime($order->getCreatedAt());
+        $createdAt = new DateTime($order->getCreatedAt());
         $subtotal = (float) $order->getSubtotal();
         $shipping = (float) $order->getShippingAmount();
         $discount = (float) $order->getDiscountAmount();
@@ -51,19 +58,19 @@ class Order extends \Taxdoo\VAT\Model\Transaction
 
         $shipments = $order->getShipmentsCollection();
         $currentShipment = $shipments->getFirstItem();
-        $currentShipmentCreatedAt = new \DateTime($currentShipment->getCreatedAt());
+        $currentShipmentCreatedAt = new DateTime($currentShipment->getCreatedAt());
 
         $invoices = $order->getInvoiceCollection();
         $currentInvoice = $invoices->getFirstItem();
-        $currentInvoiceCreatedAt = new \DateTime($currentInvoice->getCreatedAt());
+        $currentInvoiceCreatedAt = new DateTime($currentInvoice->getCreatedAt());
 
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
 
-        if (!empty($transactions)) { //If there is a transaction (payment), we use it. Otherwise we use the Invoice date
+        $transactionDate = new DateTime($currentInvoice->getCreatedAt());
+        if (!empty($transactions)) { // If there is a transaction (payment), we use it.
+                                     // Otherwise we default to the Invoice date
             $currentTransaction = $transactions->getFirstItem();
-            $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
-        } else {
-            $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+            $transactionDate = new DateTime($currentTransaction->getCreatedAt());
         }
 
         $payment = $order->getPayment();
@@ -88,7 +95,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
           'items' => $this->buildLineItems($order, $order->getAllItems()),
           'paymentChannel' => $paymentMethod,
           'paymentNumber' => $paymentId,
-          'invoiceDate' => $currentInvoiceCreatedAt->format(\DateTime::RFC3339),
+          'invoiceDate' => $currentInvoiceCreatedAt->format(DateTime::RFC3339),
           'invoiceNumber' => $currentInvoice->getIncrementId(),
         ];
         $ordersArray = [];
@@ -113,14 +120,14 @@ class Order extends \Taxdoo\VAT\Model\Transaction
 
         $orderNumber = $this->request['orders'][0]['channel']['transactionNumber'];
 
-        if (!$this->isSynced($orderSyncedAt)) {
-            $method = 'POST'; // This is the ghost of the feature
-                              // that allowed to call a PUT method to modify a transaction.
-                              // That feature is not implemented yet
-        } else {
-                $this->logger->log('Order #' . $orderNumber . ' has already been synced', 'skip');
-                return;
+        if ($this->isSynced($orderSyncedAt)) {
+            $this->logger->log('Order #' . $orderNumber . ' has already been synced', 'skip');
+            return;
         }
+
+        $method = 'POST'; // This is the ghost of the feature
+                          // that allowed to call a PUT method to modify a transaction.
+                          // That feature is not implemented yet
 
         if ($this->apiKey) {
             $this->client->setApiKey($this->apiKey);
@@ -149,6 +156,30 @@ class Order extends \Taxdoo\VAT\Model\Transaction
     }
 
     /**
+     * Enables or disables the forced syncing
+     *
+     * @param boolean $isForced
+     * @return Logger
+     */
+    public function forceSync()
+    {
+        $this->syncIsForced = true;
+        return $this;
+    }
+
+    /**
+     * Enables or disables the forced syncing
+     *
+     * @param boolean $isForced
+     * @return Logger
+     */
+    public function unForceSync()
+    {
+        $this->syncIsForced = false;
+        return $this;
+    }
+
+    /**
      * Determines if an order can be synced.
      * It is a function that in the original Taxjar plugin checks many more aspects, that in our case aren't relevant
      * In our case it just checks that the order has been completed or closed, and that transaction sync is active.
@@ -157,8 +188,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
      * @return bool
      */
     public function isSyncable(
-        \Magento\Sales\Model\Order $order,
-        $forceSync = false
+        \Magento\Sales\Model\Order $order
     ) {
         $states = ['complete', 'closed'];
 
@@ -175,7 +205,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
         $storeSyncEnabled = $this->helper->isTransactionSyncEnabled($order->getStoreId(), 'store');
         $websiteSyncEnabled = $this->helper->isTransactionSyncEnabled($order->getStore()->getWebsiteId(), 'website');
 
-        if ((!$storeSyncEnabled || (!$websiteSyncEnabled && !$storeSyncEnabled)) && !$forceSync) {
+        if ((!$storeSyncEnabled || (!$websiteSyncEnabled && !$storeSyncEnabled)) && !$this->syncIsForced) {
             return false;
         }
 

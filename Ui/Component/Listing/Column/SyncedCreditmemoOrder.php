@@ -27,6 +27,8 @@ use \Magento\Ui\Component\Listing\Columns\Column;
 use \Magento\Framework\Stdlib\DateTime\Timezone;
 use \Magento\Framework\Exception\NoSuchEntityException;
 
+use \Datetime;
+
 class SyncedCreditmemoOrder extends Column
 {
     /**
@@ -83,7 +85,7 @@ class SyncedCreditmemoOrder extends Column
 
                     if ($creditmemo->getTdSalestaxSyncDate()) {
                         $creditmemoSyncDate = $this->timezone->formatDate(
-                            new \DateTime($creditmemo->getTdSalestaxSyncDate()),
+                            new DateTime($creditmemo->getTdSalestaxSyncDate()),
                             \IntlDateFormatter::MEDIUM,
                             true
                         );

@@ -31,6 +31,9 @@ use Taxdoo\VAT\Model\TransactionFactory;
 use Taxdoo\VAT\Model\Transaction\OrderFactory;
 use Taxdoo\VAT\Model\Transaction\RefundFactory;
 
+use \DateTime;
+use \DateInterval;
+
 class Backfill
 {
     /**
@@ -155,31 +158,30 @@ class Backfill
         }
 
         $statesToMatch = ['complete', 'closed'];
-        $fromDate = $this->request->getParam('from_date');
-        $toDate = $this->request->getParam('to_date');
+        $fromDateParam = $this->request->getParam('from_date');
+        $toDateParam = $this->request->getParam('to_date');
         $storeId = $this->request->getParam('store');
         $websiteId = $this->request->getParam('website');
 
         if (isset($data['from_date'])) {
-            $fromDate = $data['from_date'];
+            $fromDateParam = $data['from_date'];
         }
 
         if (isset($data['to_date'])) {
-            $toDate = $data['to_date'];
+            $toDateParam = $data['to_date'];
         }
 
         $this->logger->log('Initializing Taxdoo transaction sync');
 
-        if (!empty($fromDate)) {
-            $fromDate = (new \DateTime($fromDate));
-        } else {
-            $fromDate = (new \DateTime())->sub(new \DateInterval('P1D'));
+        $fromDate = (new DateTime())->sub(new DateInterval('P1D'));
+        $this->logger->log($fromDateParam);
+        if (!empty($fromDateParam)) {
+            $fromDate = (new DateTime($fromDateParam));
         }
 
-        if (!empty($toDate)) {
-            $toDate = (new \DateTime($toDate));
-        } else {
-            $toDate = (new \DateTime());
+        $toDate = (new DateTime());
+        if (!empty($toDateParam)) {
+            $toDate = (new DateTime($toDateParam));
         }
 
         if ($fromDate > $toDate) {
@@ -266,21 +268,22 @@ class Backfill
 
         foreach ($orders as $order) {
             $orderTransaction = $this->orderFactory->create();
+            $orderTransaction->forceSync(); //We override the "Transaction Sync" setting.
 
-            if ($orderTransaction->isSyncable($order, true)) { // "true" forces the syncing,
-                                                               // even if transaction sync isn't active
-                $orderTransaction->build($order);
-                $orderTransaction->push();
-
-                $creditMemos = $order->getCreditmemosCollection();
-
-                foreach ($creditMemos as $creditMemo) {
-                    $refundTransaction = $this->refundFactory->create();
-                    $refundTransaction->build($order, $creditMemo);
-                    $refundTransaction->push();
-                }
-            } else {
+            if (!$orderTransaction->isSyncable($order)) {
                 $this->logger->log('Order #' . $order->getIncrementId() . ' is not syncable', 'skip');
+                continue;
+            }
+
+            $orderTransaction->build($order);
+            $orderTransaction->push();
+
+            $creditMemos = $order->getCreditmemosCollection();
+
+            foreach ($creditMemos as $creditMemo) {
+                $refundTransaction = $this->refundFactory->create();
+                $refundTransaction->build($order, $creditMemo);
+                $refundTransaction->push();
             }
         }
 

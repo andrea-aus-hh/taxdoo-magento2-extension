@@ -76,60 +76,16 @@ class Data extends AbstractHelper
     {
         $em   = explode("@", $email);
         $name = implode('@', array_slice($em, 0, count($em)-1));
+        $len = 0;
+        $asterisks = strlen($name);
         if (strlen($name) >= 3) {
             $len = 3;
             $asterisks = strlen($name) - 3;
-        } else {
-            $len = 0;
-            $asterisks = strlen($name);
         }
 
         return substr($name, 0, $len) . str_repeat('*', $asterisks) . "@" . end($em);
     }
     // @codingStandardsIgnoreEnd
-
-    /**
-     * Sort a multidimensional array by key
-     *
-     * @param array $array
-     * @param string $on
-     * @param const $order
-     * @return array
-     */
-    public function sortArray($array, $on, $order = SORT_ASC)
-    {
-        $newArray = [];
-        $sortableArray = [];
-
-        if (count($array) > 0) {
-            foreach ($array as $k => $v) {
-                if (is_array($v)) {
-                    foreach ($v as $k2 => $v2) {
-                        if ($k2 == $on) {
-                            $sortableArray[$k] = $v2;
-                        }
-                    }
-                } else {
-                    $sortableArray[$k] = $v;
-                }
-            }
-
-            switch ($order) {
-                case SORT_ASC:
-                    asort($sortableArray);
-                    break;
-                case SORT_DESC:
-                    arsort($sortableArray);
-                    break;
-            }
-
-            foreach ($sortableArray as $k => $v) {
-                $newArray[$k] = $array[$k];
-            }
-        }
-
-        return $newArray;
-    }
 
     /**
      * Transaction Sync enabled check

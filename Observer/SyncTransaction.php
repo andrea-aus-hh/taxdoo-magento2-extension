@@ -105,21 +105,21 @@ class SyncTransaction implements ObserverInterface
     public function execute(
         Observer $observer
     ) {
+        $order = $observer->getEvent()->getOrder();
         if ($observer->getData('order_id')) {
             $order = $this->orderRepository->get($observer->getData('order_id'));
-        } else {
-            $order = $observer->getEvent()->getOrder();
         }
 
         $eventName = $observer->getEvent()->getName();
         $orderTransaction = $this->orderFactory->create();
 
-        if ($orderTransaction->isSyncable($order, false)) { //We're not forcing the sync
-            if (!$this->registry->registry('taxdoo_sync_' . $eventName)) {
-                $this->registry->register('taxdoo_sync_' . $eventName, true);
-            } else {
+        $orderTransaction->unForceSync(); //Per se redundant, but let's be explicit
+        if ($orderTransaction->isSyncable($order)) {
+            if ($this->registry->registry('taxdoo_sync_' . $eventName)) {
                 return $this;
             }
+
+            $this->registry->register('taxdoo_sync_' . $eventName, true);
 
             try {
                 $orderTransaction->build($order);
@@ -136,13 +136,13 @@ class SyncTransaction implements ObserverInterface
                 if ($observer->getData('order_id')) {
                     $this->messageManager->addSuccessMessage(__('Order successfully synced to Taxdoo.'));
                 }
+                return;
             } catch (\Exception $e) {
                 $this->messageManager->addErrorMessage($e->getMessage());
             }
-        } else {
-            if ($observer->getData('order_id')) {
-                $this->messageManager->addErrorMessage(__('This order was not synced to Taxdoo.'));
-            }
+        }
+        if ($observer->getData('order_id')) {
+            $this->messageManager->addErrorMessage(__('This order was not synced to Taxdoo.'));
         }
 
         return $this;

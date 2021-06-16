@@ -28,6 +28,8 @@ use \Magento\Framework\Api\SearchCriteriaBuilder;
 use \Magento\Framework\Stdlib\DateTime\Timezone;
 use \Magento\Framework\Exception\NoSuchEntityException;
 
+use \Datetime;
+
 class SyncedCreditmemo extends Column
 {
     /**
@@ -90,7 +92,7 @@ class SyncedCreditmemo extends Column
                 try {
                     if (isset($item['td_salestax_sync_date'])) {
                         $creditmemoSyncDate = $this->timezone->formatDate(
-                            new \DateTime($item['td_salestax_sync_date']),
+                            new DateTime($item['td_salestax_sync_date']),
                             \IntlDateFormatter::MEDIUM,
                             true
                         );

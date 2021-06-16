@@ -20,6 +20,8 @@ namespace Taxdoo\VAT\Model\Transaction;
 
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
+use \Datetime;
+
 class Refund extends \Taxdoo\VAT\Model\Transaction
 {
     /**
@@ -59,18 +61,19 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $this->originalOrder = $order;
         $this->originalRefund = $creditmemo;
 
-        $createdAt = new \DateTime($order->getCreatedAt());
+        $createdAt = new DateTime($order->getCreatedAt());
 
         $invoices = $order->getInvoiceCollection();
         $currentInvoice = $invoices->getFirstItem();
-        $currentInvoiceCreatedAt = new \DateTime($currentInvoice->getCreatedAt());
+        $currentInvoiceCreatedAt = new DateTime($currentInvoice->getCreatedAt());
 
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
-        if (!empty($transactions)) { //If there is a transaction (payment), we use it. Otherwise we use the Invoice date
+
+        $transactionDate = new DateTime($currentInvoice->getCreatedAt());
+        if (!empty($transactions)) { // If there is a transaction (payment), we use it.
+                                     // Otherwise we default to the Invoice date
             $currentTransaction = $transactions->getFirstItem();
-            $transactionDate = new \DateTime($currentTransaction->getCreatedAt());
-        } else {
-            $transactionDate = new \DateTime($currentInvoice->getCreatedAt());
+            $transactionDate = new DateTime($currentTransaction->getCreatedAt());
         }
 
         $refund = [
@@ -137,16 +140,15 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $refundNumber = $this->request['refunds'][0]['channel']['refundNumber'];
         $orderNumber = $this->request['refunds'][0]['channel']['transactionNumber'];
 
-        if (!$this->isSynced($refundSyncedAt)) {
-            $method = 'POST'; // This is the ghost of the feature that allowed
-                              // to call a PUT method to modify a transaction.
-                              // That feature is not implemented yet
-        } else {
+        if ($this->isSynced($refundSyncedAt)) {
             $this->logger->log('Refund #' . $refundNumber
-                                        . ' for order #' . $orderNumber
-                                        . ' has already been synced', 'skip');
+                                      . ' for order #' . $orderNumber
+                                      . ' has already been synced', 'skip');
             return;
         }
+        $method = 'POST'; // This is the ghost of the feature that allowed
+                          // to call a PUT method to modify a transaction.
+                          // That feature is not implemented yet
 
         if ($this->apiKey) {
             $this->client->setApiKey($this->apiKey);

@@ -42,6 +42,7 @@ class NotifyFailedSync implements ObserverInterface
     {
         $failedRequest = $observer->getData('request');
         $response = $observer->getData('error');
+        $title = __('Something went wrong with your last request to Taxdoo.');
         if (array_key_exists('orders',$failedRequest)) {
           $transactionNumber = $failedRequest['orders'][0]['channel']['transactionNumber'];
           $title = __('The order ' . $transactionNumber . ' hasn\'t been synced to Taxdoo');
@@ -52,8 +53,6 @@ class NotifyFailedSync implements ObserverInterface
         } else if (array_key_exists('transactions',$failedRequest)) {
           $transactionNumber = $failedRequest['transactions'][0]['channel']['transactionNumber'];
           $title = __('The transaction ' . $transactionNumber . ' hasn\'t been synced to Taxdoo');
-        } else {
-          $title = __('Something went wrong with your last request to Taxdoo.');
         }
 
         $this->notifierPool->addMinor(

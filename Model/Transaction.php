@@ -192,16 +192,14 @@ class Transaction
         \Magento\Sales\Model\Order $order,
         $type = "shipping"
     ) {
+        $address = $order->getShippingAddress();
         if ($order->getIsVirtual() || $type == "billing") {
             $address = $order->getBillingAddress();
-        } else {
-            $address = $order->getShippingAddress();
         }
 
+        $fullName = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
         if ($address->getMiddlename() == "") {
             $fullName = $address->getFirstname() . ' ' . $address->getLastname();
-        } else {
-            $fullName = $address->getFirstname() . ' ' . $address->getMiddlename() . ' ' . $address->getLastname();
         }
 
         $toAddress = [
@@ -252,12 +250,15 @@ class Transaction
             }
 
             if (($itemType == 'simple' || $itemType == 'virtual') && $item->getParentItemId()) {
-                if (!empty($parentItem) && $parentItem->getProductType() == 'bundle') {
-                    if ($parentItem->getProduct()->getPriceType() == Price::PRICE_TYPE_FIXED) {
-                        continue;  // Skip children of fixed price bundles
-                    }
-                } else {
-                    continue;  // Skip children of configurable products
+                if ((
+                      !empty($parentItem) &&
+                      $parentItem->getProductType() == 'bundle' &&
+                      $parentItem->getProduct()->getPriceType() == Price::PRICE_TYPE_FIXED
+                    )
+                    || empty($parentItem)
+                    || $parentItem->getProductType() != 'bundle'
+                ) {
+                    continue; //Skip children of fixed price bundles and configurable products
                 }
             }
 
@@ -347,11 +348,10 @@ class Transaction
                         break;
                 }
 
-                if (isset($parentAmounts[$parentItemId])) {
-                    $parentAmounts[$parentItemId] += $amount;
-                } else {
-                    $parentAmounts[$parentItemId] = $amount;
+                if (!isset($parentAmounts[$parentItemId])) {
+                    $parentAmounts[$parentItemId] = 0;
                 }
+                $parentAmounts[$parentItemId] += $amount;
             }
         }
 

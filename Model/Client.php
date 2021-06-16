@@ -23,6 +23,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
+use Zend_Http_Client;
+
 class Client
 {
     /**
@@ -161,10 +163,9 @@ class Client
      */
     public function deleteResource($resource, $resourceIds = [], $errors = [])
     {
+        $ids = $resourceIds;
         if (is_array($resourceIds)) {
             $ids = implode(',', $resourceIds);
-        } else {
-            $ids = $resourceIds;
         }
 
         $resourceUrl = $this->_getApiUrl($resource) . '?ids=' . $ids;
@@ -212,7 +213,7 @@ class Client
     private function getClient($url, $method = \Zend_Http_Client::GET)
     {
         // @codingStandardsIgnoreStart
-        $client = new \Zend_Http_Client($url, ['timeout' => 30]);
+        $client = new Zend_Http_Client($url, ['timeout' => 30]);
         // @codingStandardsIgnoreEnd
         $client->setUri($url);
         $client->setMethod($method);
@@ -240,12 +241,13 @@ class Client
         try {
             $response = $client->request();
 
-            if ($response->isSuccessful()) {
-                $json = $response->getBody();
-                return json_decode($json, true);
-            } else {
+            if (!$response->isSuccessful()) {
                 $this->_handleError($errors, $response);
             }
+
+            $json = $response->getBody();
+            return json_decode($json, true);
+
         } catch (LocalizedException $e) {
             throw $e;
         }

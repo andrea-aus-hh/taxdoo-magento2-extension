@@ -74,9 +74,8 @@ class NotificationOriginAddress implements \Magento\Framework\Notification\Messa
             empty($originCity) ||
             empty($originStreet)) {
              return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public function getText()

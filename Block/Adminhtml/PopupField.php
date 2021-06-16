@@ -40,4 +40,16 @@ class PopupField extends Field
         $this->backendUrl = $backendUrl;
         parent::__construct($context, $data);
     }
+
+    /**
+     * Get store URL
+     *
+     * @param string $route
+     * @param array $params
+     * @return string
+     */
+    public function getStoreUrl($route, $params = [])
+    {
+        return $this->backendUrl->getUrl($route, $params);
+    }
 }

@@ -24,6 +24,10 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @see https://app.hiptest.com/projects/69435/test-plan/folders/419534/scenarios/2587535
+ */
 class ClientTest extends \PHPUnit\Framework\TestCase
 {
 
@@ -78,6 +82,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
   public function testSimpleOrderPostGetDelete()
   {
       $order = require __DIR__ . '/../_files/payloads/simple_order.php';
+      $orderPayload = [];
       $orderPayload['orders'][] = $order;
       $randomTransactionNumber = $order['channel']['transactionNumber'];
 
@@ -99,6 +104,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
   public function testComplexOrderPostGetDelete()
   {
       $order = require __DIR__ . '/../_files/payloads/order_two_objects.php';
+      $orderPayload = [];
       $orderPayload['orders'][] = $order;
       $randomTransactionNumber = $order['channel']['transactionNumber'];
 
@@ -124,10 +130,12 @@ class ClientTest extends \PHPUnit\Framework\TestCase
   public function testRefundPostGetDelete()
   {
       $order = require __DIR__ . '/../_files/payloads/order_two_objects.php';
+      $orderPayload = [];
       $orderPayload['orders'][] = $order;
       $randomTransactionNumber = $order['channel']['transactionNumber'];
 
       $refund = require __DIR__ . '/../_files/payloads/simple_refund.php';
+      $refundPayload = [];
       $refundPayload['refunds'][] = $refund;
       $randomRefundNumber = $refund['channel']['refundNumber'];
 
@@ -167,10 +175,10 @@ class ClientTest extends \PHPUnit\Framework\TestCase
     $this->expectException(LocalizedException::class);
     $this->expectExceptionMessage('Bad request');
     $order = require __DIR__ . '/../_files/payloads/bad_request.php';
+    $orderPayload = [];
     $orderPayload['orders'][] = $order;
     $this->taxdooClient->showResponseErrors(true);
 
-    $this->transactionsToBeCleaned[] = $randomTransactionNumber;
     $postResponse = $this->taxdooClient->postResource('orders', $orderPayload);
   }
 

@@ -28,6 +28,8 @@ use \Magento\Framework\Api\SearchCriteriaBuilder;
 use \Magento\Framework\Stdlib\DateTime\Timezone;
 use \Magento\Framework\Exception\NoSuchEntityException;
 
+use \Datetime;
+
 class SyncedOrder extends Column
 {
     /**
@@ -90,7 +92,7 @@ class SyncedOrder extends Column
                 try {
                     if (isset($item['td_salestax_sync_date'])) {
                         $orderSyncDate = $this->timezone->formatDate(
-                            new \DateTime($item['td_salestax_sync_date']),
+                            new DateTime($item['td_salestax_sync_date']),
                             \IntlDateFormatter::MEDIUM,
                             true
                         );

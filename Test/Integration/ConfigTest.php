@@ -23,10 +23,22 @@ namespace Taxdoo\VAT\Test\Integration;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Module\ModuleList;
 use Magento\TestFramework\ObjectManager;
+use Magento\TestFramework\Helper\Bootstrap;
 
+/**
+ * @SuppressWarnings(PHPMD.StaticAccess)
+ * @see https://app.hiptest.com/projects/69435/test-plan/folders/419534/scenarios/2587535
+ */
 class ConfigTest extends \PHPUnit\Framework\TestCase
 {
     private $moduleName = 'Taxdoo_VAT';
+
+    protected $objectManager;
+
+    protected function setUp(): void
+    {
+        $this->objectManager = Bootstrap::getObjectManager();
+    }
 
     public function testModuleIsRegistered()
     {
@@ -40,15 +52,13 @@ class ConfigTest extends \PHPUnit\Framework\TestCase
 
     public function testModuleIsConfiguredAndEnabled()
     {
-        /**
-         * @var ObjectManager $objectManager
-         */
-        $objectManager = ObjectManager::getInstance();
+
+        //$objectManager = ObjectManager::getInstance();
 
         /**
          * @var ModuleList $moduleList
          */
-        $moduleList = $objectManager->create(ModuleList::class);
+        $moduleList = $this->objectManager->create(ModuleList::class);
 
         $this->assertTrue($moduleList->has($this->moduleName));
     }

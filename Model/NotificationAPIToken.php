@@ -37,9 +37,8 @@ class NotificationAPIToken implements \Magento\Framework\Notification\MessageInt
         $response = $this->client->checkApiKey();
         if ($response) {
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
     public function getText()
     {
