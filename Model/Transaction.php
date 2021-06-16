@@ -217,16 +217,14 @@ class Transaction
     /**
      * Build line items for Taxdoo request
      *
-     * @param \Magento\Sales\Model\Order $order
      * @param array $items
      * @param string $type
      * @return array
      */
-    protected function buildLineItems($order, $items, $type = 'order')
+    protected function buildLineItems($items, $type = 'order')
     {
         $lineItems = [];
         $parentDiscounts = $this->getParentAmounts('discount', $items, $type);
-        $parentTaxes = $this->getParentAmounts('tax', $items, $type);
 
         foreach ($items as $item) {
             $itemType = $item->getProductType();
@@ -249,30 +247,12 @@ class Transaction
                 }
             }
 
-            if (($itemType == 'simple' || $itemType == 'virtual') && $item->getParentItemId()) {
-                if ((
-                      !empty($parentItem) &&
-                      $parentItem->getProductType() == 'bundle' &&
-                      $parentItem->getProduct()->getPriceType() == Price::PRICE_TYPE_FIXED
-                    )
-                    || empty($parentItem)
-                    || $parentItem->getProductType() != 'bundle'
-                ) {
-                    continue; //Skip children of fixed price bundles and configurable products
-                }
-            }
-
-            if ($itemType == 'bundle' && $item->getProduct()->getPriceType() != Price::PRICE_TYPE_FIXED) {
-                continue;  // Skip dynamic bundle parent item
-            }
-
-            if (method_exists($item, 'getOrderItem') && $item->getOrderItem()->getParentItemId()) {
+            if ($this->shouldSkipItem($item)) {
                 continue;
             }
 
             $itemId = $item->getOrderItemId() ? $item->getOrderItemId() : $item->getItemId();
             $discount = (float) $item->getDiscountAmount();
-            $tax = (float) $item->getTaxAmount();
 
             if (isset($parentDiscounts[$itemId])) {
                 $discount = $parentDiscounts[$itemId] ?: $discount;
@@ -280,10 +260,6 @@ class Transaction
 
             if ($discount > ($unitPrice * $quantity)) {
                 $discount = ($unitPrice * $quantity);
-            }
-
-            if (isset($parentTaxes[$itemId])) {
-                $tax = $parentTaxes[$itemId] ?: $tax;
             }
 
             if ($type == "order") {
@@ -336,15 +312,10 @@ class Transaction
 
             if (isset($parentItemId)) {
                 switch ($attr) {
-                    case 'discount':
+                    case 'discount': // The ghost of an old TaxJar feature to calculate parent tax amounts
                         $amount = (float) (($type == 'order') ?
                                             $item->getDiscountAmount() :
                                             $item->getDiscountRefunded());
-                        break;
-                    case 'tax':
-                        $amount = (float) (($type == 'order') ?
-                                            $item->getTaxAmount() :
-                                            $item->getTaxRefunded());
                         break;
                 }
 
@@ -356,6 +327,38 @@ class Transaction
         }
 
         return $parentAmounts;
+    }
+
+    /*
+     * Consolidating here all the checks about bundled products
+     */
+    protected function shouldSkipItem($item)
+    {
+        $parentItem = $item->getParentItem();
+        $itemType = $item->getProductType();
+
+        if (($itemType == 'simple' || $itemType == 'virtual') && $item->getParentItemId()) {
+            if ((
+                !empty($parentItem) &&
+                $parentItem->getProductType() == 'bundle' &&
+                $parentItem->getProduct()->getPriceType() == Price::PRICE_TYPE_FIXED
+                )
+                || empty($parentItem)
+                || $parentItem->getProductType() != 'bundle'
+              ) {
+                return true;
+            }
+        }
+
+        if ($itemType == 'bundle' && $item->getProduct()->getPriceType() != Price::PRICE_TYPE_FIXED) {
+            return true;  // Skip dynamic bundle parent item
+        }
+
+        if (method_exists($item, 'getOrderItem') && $item->getOrderItem()->getParentItemId()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

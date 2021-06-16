@@ -42,7 +42,8 @@ class AddTdSyncDateToGrid
     /**
      * Join td_salestax_sync_date in the order and creditmemo admin grids
      *
-     * @param CollectionFactory $subject
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     *
      * @param $collection
      * @return \Magento\Framework\Data\Collection
      */

@@ -53,19 +53,14 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
         $subtotal = (float) $creditmemo->getSubtotal();
         $shipping = (float) $creditmemo->getShippingAmount();
         $discount = (float) $creditmemo->getDiscountAmount();
-        $salesTax = (float) $creditmemo->getTaxAmount();
-        $adjustment = (float) $creditmemo->getAdjustment();
         $itemDiscounts = 0;
         $currencyCode = $creditmemo->getOrderCurrencyCode();
 
         $this->originalOrder = $order;
         $this->originalRefund = $creditmemo;
 
-        $createdAt = new DateTime($order->getCreatedAt());
-
         $invoices = $order->getInvoiceCollection();
         $currentInvoice = $invoices->getFirstItem();
-        $currentInvoiceCreatedAt = new DateTime($currentInvoice->getCreatedAt());
 
         $transactions = $this->getTransactionByOrderId($order->getIncrementId());
 
@@ -89,7 +84,7 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
           ],
           'paymentDate' => $transactionDate->format(\DateTime::RFC3339),
           'transactionCurrency' => $currencyCode,
-          'items' => $this->buildLineItems($order, $creditmemo->getAllItems(), 'refund'),
+          'items' => $this->buildLineItems($creditmemo->getAllItems(), 'refund'),
           'shipping' => -$shipping
         ];
 
@@ -133,7 +128,6 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
      */
     public function push($forceMethod = null)
     {
-        $refundUpdatedAt = $this->originalRefund->getUpdatedAt();
         $refundSyncedAt = $this->originalRefund->getTdSalestaxSyncDate();
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
@@ -172,7 +166,6 @@ class Refund extends \Taxdoo\VAT\Model\Transaction
 
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
-            $error = json_decode($e->getMessage());
             $this->eventManager->dispatch(
                 'transaction_sync_failed',
                 ['request' => $this->request, 'error' => $e->getMessage()]

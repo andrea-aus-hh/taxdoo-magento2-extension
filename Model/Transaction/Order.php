@@ -48,12 +48,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
     public function build(
         \Magento\Sales\Model\Order $order
     ) {
-        $createdAt = new DateTime($order->getCreatedAt());
-        $subtotal = (float) $order->getSubtotal();
         $shipping = (float) $order->getShippingAmount();
-        $discount = (float) $order->getDiscountAmount();
-        $shippingDiscount = (float) $order->getShippingDiscountAmount();
-        $salesTax = (float) $order->getTaxAmount();
         $currencyCode = $order->getOrderCurrencyCode();
 
         $shipments = $order->getShipmentsCollection();
@@ -92,7 +87,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
           'senderAddress' => $this->buildFromAddress($order),
           'shipping' => $shipping,
           'transactionCurrency' => $currencyCode,
-          'items' => $this->buildLineItems($order, $order->getAllItems()),
+          'items' => $this->buildLineItems($order->getAllItems()),
           'paymentChannel' => $paymentMethod,
           'paymentNumber' => $paymentId,
           'invoiceDate' => $currentInvoiceCreatedAt->format(DateTime::RFC3339),
@@ -114,7 +109,6 @@ class Order extends \Taxdoo\VAT\Model\Transaction
      */
     public function push($forceMethod = null)
     {
-        $orderUpdatedAt = $this->originalOrder->getUpdatedAt();
         $orderSyncedAt = $this->originalOrder->getTdSalestaxSyncDate();
         $this->apiKey = $this->taxdooConfig->getApiKey($this->originalOrder->getStoreId());
 
@@ -147,7 +141,6 @@ class Order extends \Taxdoo\VAT\Model\Transaction
             }
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->logger->log('Error: ' . $e->getMessage(), 'error');
-            $error = json_decode($e->getMessage());
             $this->eventManager->dispatch(
                 'transaction_sync_failed',
                 ['request' => $this->request, 'error' => $e->getMessage()]

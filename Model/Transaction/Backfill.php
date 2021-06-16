@@ -52,17 +52,17 @@ class Backfill
     protected $storeManager;
 
     /**
-     * @var \Taxdoo\SalesTax\Model\TransactionFactory
+     * @var \Taxdoo\VAT\Model\TransactionFactory
      */
     protected $transactionFactory;
 
     /**
-     * @var \Taxdoo\SalesTax\Model\Transaction\OrderFactory
+     * @var \Taxdoo\VAT\Model\Transaction\OrderFactory
      */
     protected $orderFactory;
 
     /**
-     * @var \Taxdoo\SalesTax\Model\Transaction\RefundFactory
+     * @var \Taxdoo\VAT\Model\Transaction\RefundFactory
      */
     protected $refundFactory;
 
@@ -173,16 +173,8 @@ class Backfill
 
         $this->logger->log('Initializing Taxdoo transaction sync');
 
-        $fromDate = (new DateTime())->sub(new DateInterval('P1D'));
-        $this->logger->log($fromDateParam);
-        if (!empty($fromDateParam)) {
-            $fromDate = (new DateTime($fromDateParam));
-        }
-
-        $toDate = (new DateTime());
-        if (!empty($toDateParam)) {
-            $toDate = (new DateTime($toDateParam));
-        }
+        $fromDate = $this->_fromDate($fromDateParam);
+        $toDate = $this->_toDate($toDateParam);
 
         if ($fromDate > $toDate) {
             throw new LocalizedException(__("To date can't be earlier than from date."));
@@ -204,58 +196,7 @@ class Backfill
             }
         }
 
-        // If the store id is defined, build a filter based on it
-        if (!($storeId === null) && !empty($storeId)) {
-            $storeFilter = $this->filterBuilder->setField('store_id')
-                ->setConditionType(is_array($storeId) ? 'in' : 'eq')
-                ->setValue($storeId)
-                ->create();
-
-            $storeFilterGroup = $this->filterGroupBuilder
-                ->setFilters([$storeFilter])
-                ->create();
-
-            $this->logger->log('Limiting transaction sync to store id(s): ' .
-                (is_array($storeId) ? implode(',', $storeId) : $storeId));
-        }
-
-        $fromDate->setTime(0, 0, 0);
-        $toDate->setTime(23, 59, 59);
-
-        $fromFilter = $this->filterBuilder->setField('created_at')
-            ->setConditionType('gteq')
-            ->setValue($fromDate->format('Y-m-d H:i:s'))
-            ->create();
-
-        $fromFilterGroup = $this->filterGroupBuilder
-            ->setFilters([$fromFilter])
-            ->create();
-
-        $toFilter = $this->filterBuilder->setField('created_at')
-            ->setConditionType('lteq')
-            ->setValue($toDate->format('Y-m-d H:i:s'))
-            ->create();
-
-        $toFilterGroup = $this->filterGroupBuilder
-            ->setFilters([$toFilter])
-            ->create();
-
-        $stateFilterGroup = $this->filterGroupBuilder
-            ->setFilters(array_map([$this, 'orderStateFilter'], $statesToMatch))
-            ->create();
-
-        $filterGroups = [$fromFilterGroup, $toFilterGroup, $stateFilterGroup];
-
-        if (isset($storeFilterGroup)) {
-            $filterGroups[] = $storeFilterGroup;
-        }
-
-        $criteria = $this->searchCriteriaBuilder
-            ->setFilterGroups($filterGroups)
-            ->create();
-
-        $orderResult = $this->orderRepository->getList($criteria);
-        $orders = $orderResult->getItems();
+        $orders = $this->_createFilters($storeId, $statesToMatch, $fromDate, $toDate);
 
         $this->logger->log(count($orders) . ' transaction(s) found');
 
@@ -299,5 +240,81 @@ class Backfill
     protected function orderStateFilter($state)
     {
         return $this->filterBuilder->setField('state')->setValue($state)->create();
+    }
+
+    private function _fromDate($fromDateParam)
+    {
+        $fromDate = (new DateTime())->sub(new DateInterval('P1D'));
+        if (!empty($fromDateParam)) {
+            $fromDate = (new DateTime($fromDateParam));
+        }
+        return $fromDate;
+    }
+
+    private function _toDate($toDateParam)
+    {
+        $toDate = (new DateTime());
+        if (!empty($toDateParam)) {
+            $toDate = (new DateTime($toDateParam));
+        }
+        return $toDate;
+    }
+
+    private function _createFilters($storeId, $statesToMatch, $fromDate, $toDate)
+    {
+      // If the store id is defined, build a filter based on it
+        if (!($storeId === null) && !empty($storeId)) {
+            $storeFilter = $this->filterBuilder->setField('store_id')
+              ->setConditionType(is_array($storeId) ? 'in' : 'eq')
+              ->setValue($storeId)
+              ->create();
+
+            $storeFilterGroup = $this->filterGroupBuilder
+              ->setFilters([$storeFilter])
+              ->create();
+
+            $this->logger->log('Limiting transaction sync to store id(s): ' .
+              (is_array($storeId) ? implode(',', $storeId) : $storeId));
+        }
+
+        $fromDate->setTime(0, 0, 0);
+        $toDate->setTime(23, 59, 59);
+
+        $fromFilter = $this->filterBuilder->setField('created_at')
+          ->setConditionType('gteq')
+          ->setValue($fromDate->format('Y-m-d H:i:s'))
+          ->create();
+
+        $fromFilterGroup = $this->filterGroupBuilder
+          ->setFilters([$fromFilter])
+          ->create();
+
+        $toFilter = $this->filterBuilder->setField('created_at')
+          ->setConditionType('lteq')
+          ->setValue($toDate->format('Y-m-d H:i:s'))
+          ->create();
+
+        $toFilterGroup = $this->filterGroupBuilder
+          ->setFilters([$toFilter])
+          ->create();
+
+        $stateFilterGroup = $this->filterGroupBuilder
+          ->setFilters(array_map([$this, 'orderStateFilter'], $statesToMatch))
+          ->create();
+
+        $filterGroups = [$fromFilterGroup, $toFilterGroup, $stateFilterGroup];
+
+        if (isset($storeFilterGroup)) {
+            $filterGroups[] = $storeFilterGroup;
+        }
+
+        $criteria = $this->searchCriteriaBuilder
+          ->setFilterGroups($filterGroups)
+          ->create();
+
+        $orderResult = $this->orderRepository->getList($criteria);
+        $orders = $orderResult->getItems();
+
+        return $orders;
     }
 }

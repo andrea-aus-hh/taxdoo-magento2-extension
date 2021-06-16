@@ -143,7 +143,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
       // Therefore we need to POST an order, though this has already be tested
       // Perhaps this test should be tested with the previous one?
       $this->transactionsToBeCleaned[] = $randomTransactionNumber;
-      $postResponse = $this->taxdooClient->postResource('orders', $orderPayload);
+      $this->taxdooClient->postResource('orders', $orderPayload);
       sleep(2);
 
       //Posting now the Refund
@@ -179,7 +179,7 @@ class ClientTest extends \PHPUnit\Framework\TestCase
     $orderPayload['orders'][] = $order;
     $this->taxdooClient->showResponseErrors(true);
 
-    $postResponse = $this->taxdooClient->postResource('orders', $orderPayload);
+    $this->taxdooClient->postResource('orders', $orderPayload);
   }
 
   /**

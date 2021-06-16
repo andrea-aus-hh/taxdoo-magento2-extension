@@ -99,16 +99,4 @@ class Configuration
     {
         return (bool) $this->scopeConfig->getValue(self::TAXDOO_SANDBOX_ENABLED);
     }
-
-    /**
-     * Store config
-     *
-     * @param string $path
-     * @param string $value
-     * @return void
-     */
-    private function _setConfig($path, $value)
-    {
-        $this->resourceConfig->saveConfig($path, $value, 'default', 0);
-    }
 }
