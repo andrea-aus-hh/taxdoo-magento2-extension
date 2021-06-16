@@ -19,6 +19,7 @@
 namespace Taxdoo\VAT\Model\Transaction;
 
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
+use Taxdoo\VAT\Helper\Data as TaxdooHelper;
 
 use \DateTime;
 
@@ -43,6 +44,7 @@ class Order extends \Taxdoo\VAT\Model\Transaction
      * Build an order transaction
      *
      * @param \Magento\Sales\Model\Order $order
+     * @param TaxdooHelper $helper
      * @return array
      */
     public function build(

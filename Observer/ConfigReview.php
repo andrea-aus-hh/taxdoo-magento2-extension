@@ -106,8 +106,6 @@ class ConfigReview implements ObserverInterface
         // @codingStandardsIgnoreEnd
         $configSection = $this->request->getParam('section');
 
-        $event = $observer->getEvent();
-
         if ($configSection == 'tax') {
             $enabled = $this->scopeConfig->getValue(TaxdooConfig::TAXDOO_ENABLED);
 

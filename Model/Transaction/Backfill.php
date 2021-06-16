@@ -109,6 +109,8 @@ class Backfill
      * @param \Magento\Framework\Api\Search\FilterGroupBuilder $filterGroupBuilder
      * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
      * @param TaxdooConfig $taxdooConfig
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -160,8 +162,6 @@ class Backfill
         $statesToMatch = ['complete', 'closed'];
         $fromDateParam = $this->request->getParam('from_date');
         $toDateParam = $this->request->getParam('to_date');
-        $storeId = $this->request->getParam('store');
-        $websiteId = $this->request->getParam('website');
 
         if (isset($data['from_date'])) {
             $fromDateParam = $data['from_date'];
@@ -186,15 +186,7 @@ class Backfill
                            . ' - '
                            . $toDate->format('m/d/Y'));
 
-        // If the store id is empty but the website id is defined, load stores that match the website id
-        if ($storeId === null && !($websiteId === null)) {
-            $storeId = [];
-            foreach ($this->storeManager->getStores() as $store) {
-                if ($store->getWebsiteId() == $websiteId) {
-                    $storeId[] = $store->getId();
-                }
-            }
-        }
+        $storeId = $this->_storeId();
 
         $orders = $this->_createFilters($storeId, $statesToMatch, $fromDate, $toDate);
 
@@ -258,6 +250,24 @@ class Backfill
             $toDate = (new DateTime($toDateParam));
         }
         return $toDate;
+    }
+
+    private function _storeId()
+    {
+        $storeId = $this->request->getParam('store');
+        $websiteId = $this->request->getParam('website');
+
+        // If the store id is empty but the website id is defined, load stores that match the website id
+        if ($storeId === null && !($websiteId === null)) {
+            $storeId = [];
+            foreach ($this->storeManager->getStores() as $store) {
+                if ($store->getWebsiteId() == $websiteId) {
+                    $storeId[] = $store->getId();
+                }
+            }
+        }
+
+        return $storeId;
     }
 
     private function _createFilters($storeId, $statesToMatch, $fromDate, $toDate)

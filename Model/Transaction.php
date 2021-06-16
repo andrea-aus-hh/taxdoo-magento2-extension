@@ -19,7 +19,6 @@
 namespace Taxdoo\VAT\Model;
 
 use Magento\Bundle\Model\Product\Price;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Event\ManagerInterface as EventManager;
 use Taxdoo\VAT\Helper\Data as TaxdooHelper;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
@@ -57,17 +56,12 @@ class Transaction
     protected $client;
 
     /**
-     * @var \Magento\Framework\ObjectManagerInterface
-     */
-    protected $objectManager;
-
-    /**
      * @var \Magento\Framework\Event\ManagerInterface
      */
     protected $eventManager;
 
     /**
-     * @var \Taxdoo\VAT\Helper\Data
+     * @var \Taxjar\SalesTax\Helper\Data
      */
     protected $helper;
 
@@ -82,7 +76,6 @@ class Transaction
      * @param \Magento\Catalog\Model\ProductRepository $productRepository
      * @param \Magento\Directory\Model\RegionFactory $regionFactory
      * @param \Taxdoo\VAT\Model\Logger $logger
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Framework\Event\ManagerInterface $eventManager
      * @param TaxdooHelper $helper
      * @param TaxdooConfig $TaxdooConfig
@@ -93,7 +86,6 @@ class Transaction
         \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Directory\Model\RegionFactory $regionFactory,
         \Taxdoo\VAT\Model\Logger $logger,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
         \Magento\Framework\Event\ManagerInterface $eventManager,
         \Magento\Sales\Api\TransactionRepositoryInterface $repository,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
@@ -105,7 +97,6 @@ class Transaction
         $this->productRepository = $productRepository;
         $this->regionFactory = $regionFactory;
         $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG);
-        $this->objectManager = $objectManager;
         $this->eventManager = $eventManager;
         $this->repository = $repository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
@@ -247,20 +238,13 @@ class Transaction
                 }
             }
 
-            if ($this->shouldSkipItem($item)) {
+            if ($this->shouldSkipItem($item, $parentItem, $itemType)) {
                 continue;
             }
 
+            $discount = $this->calculateDiscount($item, $parentDiscounts, $unitPrice, $quantity);
+
             $itemId = $item->getOrderItemId() ? $item->getOrderItemId() : $item->getItemId();
-            $discount = (float) $item->getDiscountAmount();
-
-            if (isset($parentDiscounts[$itemId])) {
-                $discount = $parentDiscounts[$itemId] ?: $discount;
-            }
-
-            if ($discount > ($unitPrice * $quantity)) {
-                $discount = ($unitPrice * $quantity);
-            }
 
             if ($type == "order") {
                 $lineItem = [
@@ -332,11 +316,8 @@ class Transaction
     /*
      * Consolidating here all the checks about bundled products
      */
-    protected function shouldSkipItem($item)
+    protected function shouldSkipItem($item, $parentItem, $itemType)
     {
-        $parentItem = $item->getParentItem();
-        $itemType = $item->getProductType();
-
         if (($itemType == 'simple' || $itemType == 'virtual') && $item->getParentItemId()) {
             if ((
                 !empty($parentItem) &&
@@ -350,15 +331,27 @@ class Transaction
             }
         }
 
-        if ($itemType == 'bundle' && $item->getProduct()->getPriceType() != Price::PRICE_TYPE_FIXED) {
+        if (($itemType == 'bundle' && $item->getProduct()->getPriceType() != Price::PRICE_TYPE_FIXED) ||
+             method_exists($item, 'getOrderItem') && $item->getOrderItem()->getParentItemId()) {
             return true;  // Skip dynamic bundle parent item
         }
 
-        if (method_exists($item, 'getOrderItem') && $item->getOrderItem()->getParentItemId()) {
-            return true;
+        return false;
+    }
+
+    protected function calculateDiscount($item, $parentDiscounts, $unitPrice, $quantity)
+    {
+        $itemId = $item->getOrderItemId() ? $item->getOrderItemId() : $item->getItemId();
+        $discount = (float) $item->getDiscountAmount();
+
+        if (isset($parentDiscounts[$itemId])) {
+            $discount = $parentDiscounts[$itemId] ?: $discount;
         }
 
-        return false;
+        if ($discount > ($unitPrice * $quantity)) {
+            $discount = ($unitPrice * $quantity);
+        }
+        return $discount;
     }
 
     /**
