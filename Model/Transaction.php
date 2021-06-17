@@ -23,6 +23,14 @@ use Magento\Framework\Event\ManagerInterface as EventManager;
 use Taxdoo\VAT\Helper\Data as TaxdooHelper;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * This class has too many dependencies.
+ * To solve this, the Helper class could take on some work,
+ * especially reading the shop configuration for the region
+ * or the getTransactionByOrderId
+ */
+
 class Transaction
 {
     /**
@@ -44,11 +52,6 @@ class Transaction
      * @var \Taxdoo\VAT\Model\ClientFactory
      */
     protected $clientFactory;
-
-    /**
-     * @var \Magento\Catalog\Model\ProductRepository
-     */
-    protected $productRepository;
 
     /**
      * @var \Taxdoo\VAT\Model\Client
@@ -73,7 +76,6 @@ class Transaction
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Taxdoo\VAT\Model\ClientFactory $clientFactory
-     * @param \Magento\Catalog\Model\ProductRepository $productRepository
      * @param \Magento\Directory\Model\RegionFactory $regionFactory
      * @param \Taxdoo\VAT\Model\Logger $logger
      * @param \Magento\Framework\Event\ManagerInterface $eventManager
@@ -83,7 +85,6 @@ class Transaction
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Taxdoo\VAT\Model\ClientFactory $clientFactory,
-        \Magento\Catalog\Model\ProductRepository $productRepository,
         \Magento\Directory\Model\RegionFactory $regionFactory,
         \Taxdoo\VAT\Model\Logger $logger,
         \Magento\Framework\Event\ManagerInterface $eventManager,
@@ -94,7 +95,6 @@ class Transaction
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->clientFactory = $clientFactory;
-        $this->productRepository = $productRepository;
         $this->regionFactory = $regionFactory;
         $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG);
         $this->eventManager = $eventManager;
@@ -211,6 +211,10 @@ class Transaction
      * @param array $items
      * @param string $type
      * @return array
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * The next step to reduce cyclomatic complexity here would be to split
+     * in two methods for orders and refunds.
      */
     protected function buildLineItems($items, $type = 'order')
     {
@@ -244,7 +248,7 @@ class Transaction
 
             $discount = $this->calculateDiscount($item, $parentDiscounts, $unitPrice, $quantity);
 
-            $itemId = $item->getOrderItemId() ? $item->getOrderItemId() : $item->getItemId();
+            $itemId = $this->itemId($item);
 
             if ($type == "order") {
                 $lineItem = [
@@ -313,30 +317,43 @@ class Transaction
         return $parentAmounts;
     }
 
-    /*
+    /**
      * Consolidating here all the checks about bundled products
+     *
+     * @param \Magento\Sales\Model\Order\Item $item
+     * @param \Magento\Sales\Model\Order\Item $parentItem
+     * @param string $itemType
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * This check is complex, and brings in lots of cyclomatic & NPath Complexity
+     * Shall we split in more parts?
      */
     protected function shouldSkipItem($item, $parentItem, $itemType)
     {
         if (($itemType == 'simple' || $itemType == 'virtual') && $item->getParentItemId()) {
             if ((
-                !empty($parentItem) &&
-                $parentItem->getProductType() == 'bundle' &&
-                $parentItem->getProduct()->getPriceType() == Price::PRICE_TYPE_FIXED
-                )
-                || empty($parentItem)
-                || $parentItem->getProductType() != 'bundle'
-              ) {
+              !empty($parentItem) &&
+              $parentItem->getProductType() == 'bundle' &&
+              $parentItem->getProduct()->getPriceType() == Price::PRICE_TYPE_FIXED
+              )
+              || empty($parentItem)
+              || $parentItem->getProductType() != 'bundle'
+            ) {
                 return true;
             }
         }
 
         if (($itemType == 'bundle' && $item->getProduct()->getPriceType() != Price::PRICE_TYPE_FIXED) ||
-             method_exists($item, 'getOrderItem') && $item->getOrderItem()->getParentItemId()) {
+           method_exists($item, 'getOrderItem') && $item->getOrderItem()->getParentItemId()) {
             return true;  // Skip dynamic bundle parent item
         }
 
         return false;
+    }
+
+    protected function itemId($item)
+    {
+        $itemId = $item->getOrderItemId() ? $item->getOrderItemId() : $item->getItemId();
+        return $itemId;
     }
 
     protected function calculateDiscount($item, $parentDiscounts, $unitPrice, $quantity)

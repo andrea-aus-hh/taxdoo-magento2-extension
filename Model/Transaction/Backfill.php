@@ -19,27 +19,25 @@
 namespace Taxdoo\VAT\Model\Transaction;
 
 use Magento\Framework\Api\Filter;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Store\Model\StoreManager;
-use Magento\Framework\Event\Observer;
-use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Taxdoo\VAT\Model\Configuration as TaxdooConfig;
 use Taxdoo\VAT\Model\Logger;
-use Taxdoo\VAT\Model\TransactionFactory;
 use Taxdoo\VAT\Model\Transaction\OrderFactory;
 use Taxdoo\VAT\Model\Transaction\RefundFactory;
 
 use \DateTime;
 use \DateInterval;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * This class has too many dependencies.
+ * The most obvious way to reduce them would be to do the filtering somewhere else.
+ */
+
 class Backfill
 {
-    /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    protected $scopeConfig;
 
     /**
      * @var \Magento\Framework\App\RequestInterface
@@ -50,11 +48,6 @@ class Backfill
      * @var \Magento\Store\Model\StoreManager
      */
     protected $storeManager;
-
-    /**
-     * @var \Taxdoo\VAT\Model\TransactionFactory
-     */
-    protected $transactionFactory;
 
     /**
      * @var \Taxdoo\VAT\Model\Transaction\OrderFactory
@@ -97,10 +90,8 @@ class Backfill
     protected $taxdooConfig;
 
     /**
-     * @param ScopeConfigInterface $scopeConfig
      * @param RequestInterface $request
      * @param StoreManager $storeManager
-     * @param TransactionFactory $transactionFactory
      * @param OrderFactory $orderFactory
      * @param RefundFactory $refundFactory
      * @param Logger $logger
@@ -113,10 +104,8 @@ class Backfill
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
         RequestInterface $request,
         StoreManager $storeManager,
-        TransactionFactory $transactionFactory,
         OrderFactory $orderFactory,
         RefundFactory $refundFactory,
         Logger $logger,
@@ -126,10 +115,8 @@ class Backfill
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         TaxdooConfig $taxdooConfig
     ) {
-        $this->scopeConfig = $scopeConfig;
         $this->request = $request;
         $this->storeManager = $storeManager;
-        $this->transactionFactory = $transactionFactory;
         $this->orderFactory = $orderFactory;
         $this->refundFactory = $refundFactory;
         $this->logger = $logger->setFilename(TaxdooConfig::TAXDOO_TRANSACTIONS_LOG)->force();
