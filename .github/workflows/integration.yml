@@ -30,4 +30,4 @@ jobs:
           module_name: Taxdoo_VAT
           composer_name: taxdoo/module-taxdoo
           ce_version: '2.4.0'
-          phpunit_file: '../../Test/Integration/phpunit.xml'
+          phpunit_file: './Test/Integration/phpunit.xml'
