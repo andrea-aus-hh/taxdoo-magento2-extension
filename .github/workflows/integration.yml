@@ -29,5 +29,5 @@ jobs:
         with:
           module_name: Taxdoo_VAT
           composer_name: taxdoo/module-taxdoo
-          ce_version: '0.0.1'
+          ce_version: '2.4.0'
           phpunit_file: '../../Test/Integration/phpunit.xml'
