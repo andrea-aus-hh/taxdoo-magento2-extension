@@ -24,5 +24,8 @@ foreach ($order->getAllItems() as $orderItem) {
 }
 $shipment->register();
 $shipment->getOrder()->setIsInProcess(true);
+
+$order->setStatus('complete');
+
 $shipment->save();
 $shipment->getOrder()->save();

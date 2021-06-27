@@ -175,7 +175,7 @@ class Backfill
 
         $storeId = $this->_storeId();
 
-        $orders = $this->_createFilters($storeId, $statesToMatch, $fromDate, $toDate);
+        $orders = $this->createListOfOrders($storeId, $statesToMatch, $fromDate, $toDate);
 
         $this->logger->log(count($orders) . ' transaction(s) found');
 
@@ -257,7 +257,7 @@ class Backfill
         return $storeId;
     }
 
-    private function _createFilters($storeId, $statesToMatch, $fromDate, $toDate)
+    public function createListOfOrders($storeId, $statesToMatch, $fromDate, $toDate)
     {
       // If the store id is defined, build a filter based on it
         if (!($storeId === null) && !empty($storeId)) {

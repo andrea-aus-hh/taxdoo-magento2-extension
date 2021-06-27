@@ -95,6 +95,9 @@ foreach ($orderItems as $orderItem) {
     $order->addItem($orderItem);
 }
 
+$order->setCreatedAt('2021-03-20 21:00:00');
+$order->setState('complete');
+
 /** @var OrderRepositoryInterface $orderRepository */
 $orderRepository = $objectManager->create(OrderRepositoryInterface::class);
 

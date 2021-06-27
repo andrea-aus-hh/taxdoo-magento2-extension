@@ -27,7 +27,7 @@ $objectManager = ObjectManager::getInstance();
 /** @var InvoiceService $invoiceService */
 $invoiceService = $objectManager->get(InvoiceService::class);
 $invoice = $invoiceService->prepareInvoice($order);
-$invoice->setIncrementId('100000001');
+$invoice->setIncrementId($order->getIncrementId());
 $invoice->register();
 
 /** @var InvoiceRepositoryInterface $invoiceRepository */
