@@ -31,8 +31,12 @@
             <directory suffix="Test.php">testsuite</directory>
             <exclude>testsuite/Magento/MemoryUsageTest.php</exclude>
         </testsuite>
-        <testsuite name="Taxdoo">
+        <testsuite name="Taxdoo_Integration">
             <directory>../../../app/code/Taxdoo/VAT/Test/Integration</directory>
+        </testsuite>
+        <testsuite name="IntegrationTests"> <!--This is the one used by GitHub actions-->
+            <directory>../../../app/code/Taxdoo/VAT/Test/Integration</directory>
+            <exclude>../../../app/code/Taxdoo/VAT/Test/Integration/Model/ClientTest.php</exclude>
         </testsuite>
     </testsuites>
     <!-- Code coverage filters -->
