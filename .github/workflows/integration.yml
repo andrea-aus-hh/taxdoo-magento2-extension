@@ -27,7 +27,7 @@ jobs:
       - name: M2 Integration Tests with Magento 2 (Php7.4)
         uses: extdn/github-actions-m2/magento-integration-tests/7.4@master
         with:
-          module_name: Foo_Bar
-          composer_name: foo/magento2-foobar
-          ce_version: '2.4.0'
+          module_name: Taxdoo_VAT
+          composer_name: taxdoo/module-taxdoo
+          ce_version: '0.0.1'
           phpunit_file: '../../Test/Integration/phpunit.xml'
