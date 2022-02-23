@@ -44,7 +44,9 @@ bin/magento setup:di:compile
 
 **Please notice**: this extension is developed for self-educational purpose and for fun. It is not officially supported by Taxdoo.
 
-## Tests
+## Development
+
+### Running integration tests
 
 The integration tests here included, largely inherited from TaxJar, test in particular the generation of Orders/Refunds objects in many different cases, and the client. This creates some test transactions in your Taxdoo Sandbox environment and cleans them up afterwards - and requires a working Taxdoo API Token.
 
@@ -72,6 +74,26 @@ vendor/bin/phpunit -c <Magento_Home>/dev/tests/integration/phpunit.xml --testsui
 Notice that the configuration flag should include the full path to `phpunit.xml`.
 
 Deeper and broader tests are being written. Stay tuned.
+
+### Magento 2 Docker Image with pre-installed extension
+
+Via docker you can run on your local machine a Magento 2 installation with a pre-installed Taxdoo VAT extension.
+
+To run it, clone this repository, adapt the `env` file and run `docker-compose`:
+
+```
+docker-compose up
+```
+
+Look up the container name, run the Magento install script and, optionally, the sample data install script:
+
+```
+$ docker exec -it <container_name> install-magento
+$ docker exec -it <container_name> install-sampledata
+```
+
+Your Magento 2 system should now be running, with a pre-installed Taxdoo VAT extension.
+
 
 ## License
 
