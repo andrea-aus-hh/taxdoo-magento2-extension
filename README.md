@@ -42,8 +42,6 @@ bin/magento setup:upgrade
 bin/magento setup:di:compile
 ```
 
-**Please notice**: this extension is developed for self-educational purpose and for fun. It is not officially supported by Taxdoo.
-
 ## Development
 
 ### Running integration tests
@@ -103,4 +101,9 @@ Taxdoo's Magento 2 module is released under the [Open Software License 3.0](http
 
 If you find a bug in this extension, or you want to request a new feature, don't be afraid to open a new issue or get in touch with me.
 
-Please also refer to the [Taxdoo API Documentation](https://dev.taxdoo.com/).
+You can also refer to the [Taxdoo API Documentation](https://dev.taxdoo.com/).
+
+### Disclaimer
+
+This extension is developed for self-educational purpose and for fun. It is not officially supported by Taxdoo.
+This still holds although the author, after working on this project, started working indeed at Taxdoo.
